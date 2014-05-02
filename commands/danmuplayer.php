@@ -57,6 +57,7 @@ function optioneles(){
                     </div>
                     <div id="fontColor">
                         <span>颜色</span>
+                        <input id="colorinput" placeholder="FFFFFF"/>
                     </div>
                 </div>
                 </div>
@@ -89,9 +90,7 @@ function optioneles(){
                 <div id="loop" title="循环">∞</div>
                 <div id="fullscreen" title="全屏">全<div id="fullpage" title="填满页面">页</div></div>
             </div>
-        </div>
-
-<?php
+        </div><?php
 } else {
     echo "Error";
 }

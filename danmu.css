@@ -460,6 +460,12 @@ left: 157px;
 height: 133px;
 width: 79px;
 }
+.playermainbody  #fontColor #colorinput{
+text-align: center;
+width: 72px;
+border: 1px solid #ccc;
+border-radius: 2px;
+}
 .playermainbody #sendbox #danmuinput{
 	position: absolute;
 background-color: #FFFFFF;
