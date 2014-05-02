@@ -222,7 +222,18 @@ function UseDanmuPlayer() {
 		replaceCommonVideo(videos[i]);
 	}
 }
+function isHexColor(color) {
+	if (color) {
+		if (color.match(/[\w\d]{6}/i)) {
+			return true;
 
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
+}
 function initPlayer(_in_videoid) {
 	var videoid = _in_videoid;
 	var width, height;
@@ -237,11 +248,14 @@ function initPlayer(_in_videoid) {
 	danmuobjlist = [],
 	danmuarray = [],
 	danmutunnel = {
-		right: [],left: [],bottom: [],top: []
-		
+		right: [],
+		left: [],
+		bottom: [],
+		top: []
+
 	},
-	moverInterval=20,
-	moveTime=5000,
+	moverInterval = 16,
+	moveTime = 5000,
 	tunnelheight = 0,
 	onshowdanmulist = [],
 	timeline = [],
@@ -300,13 +314,21 @@ function initPlayer(_in_videoid) {
 
 		player.loadinfo.height = player.progress.offsetHeight;
 		COL = newC_GUI();
-		COL.font.color="#ffffff";
-		COL.font.fontFamily="黑体";
+		COL.font.color = "#ffffff";
+		COL.font.fontFamily = "黑体";
 		COL.setCanvas(player.danmulayer);
 		COL.autoClear = true;
 		Glib = getGraphlib(COL);
+		window.doc = COL.document;
 		initTextDanmuContainer();
 		fitdanmulayer();
+	}
+	function initTextDanmuContainer() {
+		window.ctt = danmucontainer = COL.Graph.New();
+		COL.Graph.Eventable(danmucontainer);
+		danmucontainer.name = "danmucontainer";
+		//danmucontainer.needsort=false;
+		COL.document.addChild(danmucontainer);
 	}
 	function changetab(tab) {
 		for (var i = 0; i < player.ctrlbuttons.length; i++) {
@@ -393,7 +415,7 @@ function initPlayer(_in_videoid) {
 		}
 	}
 
-	function danmuListener() {
+	/*function danmuListener() {
 		var danmulisten = new EventSource(cmd_url + "?cmd=listenDanmuUpdate " + videoid);
 		danmulisten.onopen = function() {
 			console.log("建立弹幕监听连接");
@@ -427,7 +449,7 @@ function initPlayer(_in_videoid) {
 			}
 
 		};
-	}
+	}*/
 
 	function loaddanmu() {
 		console.log("加载弹幕");
@@ -479,7 +501,8 @@ function initPlayer(_in_videoid) {
 			if (interval.movedanmu) clearInterval(interval.movedanmu);
 			interval.movedanmu = setInterval(function() {
 				danmufuns.mover();
-			},moverInterval);
+			},
+			moverInterval);
 		}
 		/*interval.calibrationTime=function(){
 		danmufuns.calibrationTime();
@@ -490,10 +513,10 @@ function initPlayer(_in_videoid) {
 			danmufuns.calibrationTime();
 		},100);
 	}*/
-		setInterval(function() {
+		/*setInterval(function() {
 			fitdanmulayer();
 		},
-		2000);
+		2000);*/
 		interval.movedanmufun();
 		//interval.
 	}
@@ -503,16 +526,16 @@ function initPlayer(_in_videoid) {
 		player.loadinfo.width = player.loadinfo.offsetWidth;
 		controlfuns.refreshprogresscanvas();
 		for (var i in danmucontainer.childNode) {
-			if( danmucontainer.childNode[i].type==2){
+			if (danmucontainer.childNode[i].type == 2) {
 				danmucontainer.childNode[i].set({
-						x: width / 2,
-						y: tunnelheight - danmucontainer.childNode[i].tunnelobj[2]
-					});
-			}else if(danmucontainer.childNode[i].type==3){
+					x: width / 2,
+					y: tunnelheight - danmucontainer.childNode[i].tunnelobj[2]
+				});
+			} else if (danmucontainer.childNode[i].type == 3) {
 				danmucontainer.childNode[i].set({
-						x: width / 2,
-						y: danmucontainer.childNode[i].tunnelobj[2]
-					});
+					x: width / 2,
+					y: danmucontainer.childNode[i].tunnelobj[2]
+				});
 			}
 		}
 		/*for (var i = 0; i < danmucontainer.childNode.length; i++) {
@@ -540,7 +563,6 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	function newTimePiece(t) {
-		//console.log(t);
 		if (player.video.paused) return;
 		if (t >= timepoint) {
 			for (var i = timepoint; i <= t; i++) {
@@ -549,24 +571,23 @@ function initPlayer(_in_videoid) {
 		}
 		timepoint = t + 10;
 		var i = 0;
-		//console.log("timer");
-		var val = setInterval(function() {
+		if (interval.timer) {
+			clearInterval(interval.timer);
+			interval.timer = 0;
+		}
+		interval.timer = setInterval(function() {
 			if (timeline[timepoint]) {
 				danmufuns.fire(timepoint);
 			}
 			timepoint += 10;
 			if (i == 24 || player.video.paused) {
-				clearInterval(val);
+				clearInterval(interval.timer);
 			}
 			i++;
 		},
 		10);
 	}
-	function initTextDanmuContainer() {
-		danmucontainer = COL.Graph.New();
-		COL.Graph.Eventable(danmucontainer);
-		COL.document.addChild(danmucontainer);
-	}
+
 	/*function tips(tip) {
 		if (typeof tip == "string") {
 			var c, size;
@@ -596,14 +617,14 @@ function initPlayer(_in_videoid) {
 	}
 	danmufuns = {
 		createCommonDanmu: function(danmuobj, tunnelobj) {
-			var color = danmuobj.co ? ("#" + danmuobj.co) : "#fff";
+			var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
 			var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
-			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s+"px", {
+			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s + "px", {
 				color: color,
 				textborderColor: bordercolor,
 				textborderWidth: 1,
 				type: danmuobj.ty,
-				fontWeight:600
+				fontWeight: 600
 			});
 			TextDanmu.tunnelobj = tunnelobj;
 			switch (danmuobj.ty) {
@@ -663,8 +684,9 @@ function initPlayer(_in_videoid) {
 				} else {
 					type = 0;
 				}
+				/*
 				danmucount++;
-				timeline[time] = true;
+				timeline[time] = true;*/
 				var danmuobj = {};
 				danmuobj.t = time;
 				danmuobj.id = 0;
@@ -676,25 +698,14 @@ function initPlayer(_in_videoid) {
 				date.month = date.getMonth() + 1;
 				date.month = (date.month < 10) ? "0" + date.month: date.month;
 				danmuobj.d = date.getFullYear() + "-" + date.month + "-" + date.day;
-				createDanmuDiv(danmuobj);
+				//createDanmuDiv(danmuobj);
+				danmufuns.initnewDanmuObj(danmuobj);
 				danmufuns.createCommonDanmu(danmuobj, danmufuns.getTunnel(danmuobj.ty, danmuobj.s));
 
 				autocmd("adddanmu", eval(videoid), type, player.danmuinput.value, time, danmuStyle.color || "NULL", danmuStyle.fontsize,
 				function(response) {
 					if (Number(response) >= 0) {
-						/*danmucount++;
-						timeline[time] = true;
-						var danmuobj = {};*/
 						danmuobj.id = Number(response);
-						/*danmuobj.t = time;
-						danmuobj.c = player.danmuinput.value;
-						danmuobj.ty = type;*/
-						/*var date = new Date();
-						date.day = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate();
-						date.month = date.getMonth() + 1;
-						date.month = (date.month < 10) ? "0" + date.month: date.month;
-						danmuobj.d = date.getFullYear() + "-" + date.month + "-" + date.day;
-						createDanmuDiv(danmuobj);*/
 						player.danmuinput.value = "";
 						player.sendcover.style.display = "none";
 						danmufuns.refreshnumber();
@@ -709,6 +720,11 @@ function initPlayer(_in_videoid) {
 			if (!AnimationFrame) {
 				console.log("显示弹幕");
 				function danmurefresh() {
+					if (danmucontainer.drawlist.length == 0) {
+						danmucontainer.display = false;
+					} else if (!danmucontainer.display) {
+						danmucontainer.display = true;
+					}
 					COL.draw();
 					AnimationFrame = requestAnimationFrame(danmurefresh);
 				}
@@ -719,6 +735,7 @@ function initPlayer(_in_videoid) {
 		hide: function() {
 			if (AnimationFrame) {
 				console.log("隐藏弹幕");
+				danmucontainer.display = false;
 				cancelAnimationFrame(AnimationFrame);
 				AnimationFrame = 0;
 				player.danmuframe.style.display = "none";
@@ -751,29 +768,22 @@ function initPlayer(_in_videoid) {
 			var tun = 0,
 			ind = i = 1;
 			if (!tunnel[tun]) tunnel[tun] = [];
-			for (; ind < i + size; ind++) {
-				//console.log(ind)
+			while (ind < (i + size)) {
 				if (tunnel[tun][ind]) {
-					//console.log(ind+"有值:"+tunnel[tun][ind])
 					i = ind + tunnel[tun][ind];
-					//console.log("i:"+i)
 					ind = i;
-					//console.log(tunnel[tun][ind])
-					//console.log("ind:"+ind)
 					if (ind > (tunnelheight - size)) {
 						tun++;
 						i = ind = 1;
 						if (!tunnel[tun]) tunnel[tun] = [];
 					}
 				} else if (ind == (i + size - 1)) {
-					//console.log("结束:ind:"+ind+" i:"+i+" size:"+size)
 					break;
-				}
+				} else {
+					ind++
+				};
 			}
-
-			//console.log(tunnel[tun])
 			tunnel[tun][i] = size;
-			//console.log("记录:" + tun + " " + i + " " + size + "\n");
 			return [type, tun, i]; //轨道类号,分页号，轨道号
 		},
 		calibrationTime: function() {
@@ -796,11 +806,34 @@ function initPlayer(_in_videoid) {
 			});
 		},*/
 		clear: function() {
-for (var i in danmucontainer.childNode) {
-	COL.Graph.Delete(danmucontainer.childNode[i]);
-	//danmucontainer.childNode[i]=null;
-}
-},
+			for (var i in danmucontainer.childNode) {
+				var node = danmucontainer.childNode[i];
+				switch (node.tunnelobj[0]) {
+				case 0:
+					{
+						danmutunnel.right[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+						break;
+					}
+				case 1:
+					{
+						danmutunnel.left[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+						break;
+					}
+				case 2:
+					{
+						danmutunnel.bottom[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+						break;
+					}
+				case 3:
+					{
+						danmutunnel.top[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+						break;
+					}
+				}
+				COL.Graph.Delete(node);
+				//danmucontainer.childNode[i]=null;
+			}
+		},
 		start: function() {
 			timepoint = getVideoMillionSec();
 			newTimePiece(timepoint);
@@ -822,65 +855,70 @@ for (var i in danmucontainer.childNode) {
 			false);
 		},
 		mover: function() {
-			if(!player.video.paused){
-				var precentageAdd=moverInterval/moveTime;
+			if (!player.video.paused) {
+				var precentageAdd = moverInterval / moveTime;
 				for (var i in danmucontainer.childNode) {
-					var node=danmucontainer.childNode[i];
-					switch(node.type){
-						case 0:{
-							var roadLength=width+node.width;
-							node.x-=roadLength*(precentageAdd);
+					var node = danmucontainer.childNode[i];
+					if (!node) continue;
+					switch (node.type) {
+					case 0:
+						{
+							var roadLength = width + node.width;
+							node.x -= roadLength * (precentageAdd);
 							if (danmutunnel.right[node.tunnelobj[1]][node.tunnelobj[2]] && node.x < (width - node.width)) {
-	danmutunnel.right[node.tunnelobj[1]][node.tunnelobj[2]] = null;
-}
-							if(node.x<-node.width){
+								danmutunnel.right[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+							}
+							if (node.x < -node.width) {
 								COL.Graph.Delete(node);
-								//node=danmucontainer.childNode[i]=null;
+								//danmucontainer.childNode[i]=null;
 							}
 							break;
 						}
-						case 1:{
-							var roadLength=width+node.width;
-							node.x+=roadLength*(precentageAdd);
+					case 1:
+						{
+							var roadLength = width + node.width;
+							node.x += roadLength * (precentageAdd);
 							if (danmutunnel.left[node.tunnelobj[1]][node.tunnelobj[2]] && node.x > 0) {
-	danmutunnel.left[node.tunnelobj[1]][node.tunnelobj[2]] = null;
-}
-							if(node.x>width){
+								danmutunnel.left[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+							}
+							if (node.x > width) {
 								COL.Graph.Delete(node);
-								//node=danmucontainer.childNode[i]=null;
+								//danmucontainer.childNode[i]=null;
 							}
 							break;
 						}
-						case 2:{
-							if(node.precentage>=0){
-								node.precentage+=precentageAdd;
-								if(node.precentage>1){
-								COL.Graph.Delete(node);
-								danmutunnel.bottom[node.tunnelobj[1]][node.tunnelobj[2]] =null;
+					case 2:
+						{
+							if (node.precentage >= 0) {
+								node.precentage += precentageAdd;
+								if (node.precentage > 1) {
+									COL.Graph.Delete(node);
+									danmutunnel.bottom[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+								}
+							} else {
+								node.precentage = 0;
 							}
-							}else{
-								node.precentage=0;
-							}
-							
+
 							break;
 						}
-						case 3:{
-							if(node.precentage>=0){
-								node.precentage+=precentageAdd;
-								if(node.precentage>1){
-								COL.Graph.Delete(node);
-								danmutunnel.top[node.tunnelobj[1]][node.tunnelobj[2]] =null;
+					case 3:
+						{
+							if (node.precentage >= 0) {
+								node.precentage += precentageAdd;
+								if (node.precentage > 1) {
+									COL.Graph.Delete(node);
+									danmutunnel.top[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+								}
+							} else {
+								node.precentage = 0;
 							}
-							}else{
-								node.precentage=0;
-							}
-							
+
 							break;
 						}
 					}
 				}
 			}
-			
+
 		},
 		initnewDanmuObj: function(danmuobj) {
 			if (typeof danmuobj == "object") {
@@ -901,7 +939,7 @@ for (var i in danmucontainer.childNode) {
 						danmufuns.createCommonDanmu(tmpd, danmufuns.getTunnel(tmpd.ty, tmpd.s));
 					} else if (danmuarray[t][i].type == 4) {
 
-}
+					}
 				}
 			}
 		},
@@ -1089,6 +1127,9 @@ for (var i in danmucontainer.childNode) {
 				//
 			}
 		});
+		aEL(window,"resize",function(){
+			
+		});
 		aEL(player.play_pause, "click",
 		function(e) {
 			e.preventDefault();
@@ -1113,7 +1154,7 @@ for (var i in danmucontainer.childNode) {
 			} else {
 				danmufuns.hide();
 				clearInterval(interval.movedanmu);
-				interval.movedanmu=0;
+				interval.movedanmu = 0;
 				danmufuns.clear();
 			}
 		});
@@ -1516,7 +1557,6 @@ for (var i in danmucontainer.childNode) {
 	loaddanmu();
 	setAllIntervals();
 	//COL.Debug.on();
-
 }
 
 window.onload = function() {

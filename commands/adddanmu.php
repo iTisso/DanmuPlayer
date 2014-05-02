@@ -21,18 +21,18 @@ if (count($option) == 6) {
         return;
     }
     if ($color != "NULL") {
-        preg_match("/^rgb\(\d\d\d,\d\d\d,\d\d\d\)$/i", $color, $matches);
+        /*preg_match("/^rgb\(\d\d\d,\d\d\d,\d\d\d\)$/i", $color, $matches);
         if ($matches == $color) {
             preg_match("/(\d\d\d),(\d\d\d),(\d\d\d)/i", $color, $matches);
             $color = $matches[1] . $matches[2] . $matches[3];
-        } else {
+        } else {*/
             preg_match("/[\w\d]{6}/i", $color, $matches);
             if ($matches[0]) {
                 $color = $matches[0];
             } else {
                 $color = "NULL";
             }
-        }
+       /* }*/
     }else{
     	$color=NULL;
     }

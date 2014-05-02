@@ -17,7 +17,7 @@ if(isID($option[0])){
 		}
 		$arr[$i]='{id:'.$id.
 			',ty:'.$type.
-			',c:"'.$content.'"';
+			',c:"'.($content).'"';
 		if($time>=0)$arr[$i]=$arr[$i].',t:'.($time?$time:0);
 		if($color)$arr[$i]=$arr[$i].',co:"'.$color.'"';
 		if($size)$arr[$i]=$arr[$i].',s:'.$size;

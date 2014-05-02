@@ -18,7 +18,7 @@ function newC_GUI() {
 			fontWeight: null,
 			textInput: null,
 			fontVariant: null,
-			color:"#000",
+			color: "#000",
 			lineHeight: null,
 			fontSize: "15px",
 			fontFamily: "Arial"
@@ -34,11 +34,11 @@ function newC_GUI() {
 		canvasonfocus: false,
 		document: null,
 		onoverElement: null,
-		tmpGraphID:0,
-		fps:{
-			c:0,
-			v:0,
-			i:null
+		tmpGraphID: 0,
+		fps: {
+			c: 0,
+			v: 0,
+			i: null
 		},
 		eve: {},
 		commonevents: ["mouseover", "mouseout", "mousemove", "mousewheel", "mouseup", "click", "centerclick", "rightclick", "mousedown", "keydown", "keyup", "keypress"],
@@ -75,7 +75,7 @@ function newC_GUI() {
 			return Object.create(this);
 		}
 	};
-	C_GUI.generateGraphID=function(){
+	C_GUI.generateGraphID = function() {
 		C_GUI.tmpGraphID++;
 		return C_GUI.tmpGraphID;
 	};
@@ -213,14 +213,13 @@ function newC_GUI() {
 
 		aEL(canvas_dom, "resize",
 		function() {
-			C_GUI.document.width=canvas_dom.width = C_GUI.width = canvas_dom.offsetWidth;
-			C_GUI.document.height=canvas_dom.height = C_GUI.height = canvas_dom.offsetHeight;
+			C_GUI.document.width = canvas_dom.width = C_GUI.width = canvas_dom.offsetWidth;
+			C_GUI.document.height = canvas_dom.height = C_GUI.height = canvas_dom.offsetHeight;
 			if (C_GUI.buffercanvas) {
 				C_GUI.buffercanvas.width = canvas_dom.offsetWidth;
 				C_GUI.buffercanvas.height = canvas_dom.offsetHeight;
 			}
 			//C_GUI.setPosition();
-
 		});
 
 		aEL(canvas_dom, "mouseup",
@@ -317,6 +316,7 @@ function newC_GUI() {
 		C_GUI.document = C_GUI.Graph.New();
 		C_GUI.Graph.Eventable(C_GUI.document);
 		C_GUI.document.drawtype = "image";
+		C_GUI.document.name="document";
 		C_GUI.document.width = canvas_dom.width;
 		C_GUI.document.height = canvas_dom.height;
 		C_GUI.drawlist = [C_GUI.document];
@@ -332,7 +332,7 @@ function newC_GUI() {
 		New: function(newname) {
 			var g = {
 				name: newname,
-				GraphID:C_GUI.generateGraphID(),
+				GraphID: C_GUI.generateGraphID(),
 				y: 0,
 				x: 0,
 				width: 1,
@@ -361,10 +361,10 @@ function newC_GUI() {
 				backgroundColor: null,
 				eventable: false,
 				imageobj: null,
-				needsort:true,
+				needsort: true,
 				z_index: null,
-				clipBy:"border",
-				drawlist: null,
+				clipBy: "border",
+				drawlist: [],
 				childNode: [],
 				parentNode: null,
 				set: function(json) {
@@ -408,7 +408,7 @@ function newC_GUI() {
 					}
 
 				},
-				borderPathFun:function(ct){
+				borderPathFun: function(ct) {
 					ct.rect(0, 0, this.width, this.height);
 				},
 				zindex: function(index) {
@@ -456,7 +456,7 @@ function newC_GUI() {
 					var newobj = Object.create(this);
 					newobj.parentNode = null;
 					newobj.childNode = [];
-					newobj.drawlist = null;
+					newobj.drawlist = [];
 					return newobj;
 				},
 				clone: function() {
@@ -467,40 +467,57 @@ function newC_GUI() {
 					if (graph.GraphID) {
 						//console.log(graph.GraphID)
 						//this.childNode.unshift(graph);
-						this.childNode[graph.GraphID]=graph;
+						this.childNode[graph.GraphID] = graph;
+						//this.childNode.pop(graph);
 						graph.parentNode = this;
-						if(this.needsort){
+						if (this.needsort) {
 							C_GUI.tools.arraybyZ_index(this);
-						}else{//var i=0;
-							/*for(var eles in this.childNode){
-								this.drawlist[i]= this.childNode[eles];
-								i++;
-							}*/
+						} else {
 							this.drawlist.unshift(graph);
 						}
-						
 					}
 				},
 				removeChild: function(graph) {
 					/*for (var i = 0; graph.GraphID !=this.childNode[i].GraphID; i++) {
 						if (i == this.childNode.length) break;
 					}*/
-					if(this.childNode[graph.GraphID]){
-						this.childNode[graph.GraphID]=null;
+					if (this.childNode[graph.GraphID]) {
+						//this.childNode[graph.GraphID] = null;
 						graph.parentNode = null;
-						var i=0;
-						for(var eles in this.childNode){
-								if(!this.childNode[eles]){
-									this.childNode.splice(i, 1);
-									var ind=0;
-							for(var eles in this.childNode){
-								this.drawlist[ind]= this.childNode[eles];
-								ind++;
-							}
-									break;
+						delete this.childNode[graph.GraphID];
+						var ind = 0;
+								for(var ele in this.drawlist){
+									if(this.drawlist[ele].GraphID==graph.GraphID){
+										this.drawlist.splice(ind, 1);
+										break;
+									}
+									ind++;
 								}
-								i++;
+						//delete this.drawlist[graph.GraphID];
+						/*this.drawlist.splice(graph.GraphID, 1);
+						this.childNode.splice(graph.GraphID, 1);*/
+						/*var i = 0;
+						for (var eles in this.childNode) {
+							if (!this.childNode[eles]) {
+								this.childNode.splice(graph.GraphID], 1);
+								/*
+								for (var eles in this.childNode) {
+									this.drawlist[ind] = this.childNode[eles];
+									ind++;
+								}*/
+								/*var ind = 0;
+								for(var ele in this.drawlist){
+									if(this.drawlist[ele].GraphID==graph.GraphID){
+										this.drawlist.splice(ind, 1);
+										break;
+									}
+									ind++;
+								}
+								i--;
+								this.drawlist.splice(eles, 1);
 							}
+							i++;
+						}*/
 					}
 					/*if (graph.GraphID==this.childNode[i].GraphID) {
 						this.childNode.splice(i, 1);
@@ -516,11 +533,11 @@ function newC_GUI() {
 			if (image) {
 				m.userImage(image);
 			}
-		}, 
-		NewTextObj: function(text, fontsize,opjson) {
+		},
+		NewTextObj: function(text, fontsize, opjson) {
 			var t = C_GUI.Graph.New();
 			t.drawtype = "text";
-			t.realtimeVary=false;
+			t.realtimeVary = false;
 			t.text = text || " ";
 			t.baseline = "middle";
 			t.fontStyle = null;
@@ -528,7 +545,7 @@ function newC_GUI() {
 			t.textInput = null;
 			t.fontVariant = null;
 			t.lineHeight = null;
-			t.fontSize = fontsize||"15px";
+			t.fontSize = fontsize || "15px";
 			t.fontFamily = null;
 			t.innerX = 0;
 			t.innerY = 0;
@@ -546,9 +563,9 @@ function newC_GUI() {
 			};
 			t.maxWidth = 0;
 			if (opjson) {
-						for (var ob in opjson) {
-							t[ob] = opjson[ob];
-						}
+				for (var ob in opjson) {
+					t[ob] = opjson[ob];
+				}
 			}
 			t.prepareText = function() {
 				if (!t.imageobj) {
@@ -584,7 +601,7 @@ function newC_GUI() {
 				ct.textBaseline = t.baseline;
 				ct.lineWidth = t.textborderWidth;
 				ct.strokeStyle = t.textborderColor;
-				ct.fillStyle = t.color || C_GUI.font.color||"#000";
+				ct.fillStyle = t.color || C_GUI.font.color || "#000";
 				ct.save();
 				if (t.shadowBlur > 0) {
 					ct.font = font;
@@ -648,7 +665,6 @@ function newC_GUI() {
 				if (graph.parentNode) {
 					graph.parentNode.removeChild(graph);
 				}
-				graph = null;
 				return true;
 			}
 			return false;
@@ -656,8 +672,8 @@ function newC_GUI() {
 	};
 
 	C_GUI.drawElement = function(d, ct) {
-		/*for (var i = 0; i < d.length; i++) {*/
-			for (var i in d) {
+		for (var i = 0; i < d.length; i++) {
+			//if(!d[i])continue;
 			if (d[i].display) {
 				ct.save();
 				ct.translate(d[i].x + d[i].rotatecenter.x - d[i].positionpoint.x, d[i].y + d[i].rotatecenter.y - d[i].positionpoint.y);
@@ -667,16 +683,19 @@ function newC_GUI() {
 				if (d[i].opacity !== null) ct.globalAlpha = d[i].opacity;
 				if (d[i].overflow == "hidden") {
 					ct.beginPath();
-					switch(d[i].clipBy){
-						case "border":{
-							d[i].borderPathFun?d[i].borderPathFun(ct):C_GUI.tools.defaultPathFun(ct, d[i]);
+					switch (d[i].clipBy) {
+					case "border":
+						{
+							d[i].borderPathFun ? d[i].borderPathFun(ct) : C_GUI.tools.defaultPathFun(ct, d[i]);
 							break;
 						}
-						case "drawfunction":{
-							d[i].drawfunction?d[i].drawfunction(ct):C_GUI.tools.defaultPathFun(ct, d[i]);
+					case "drawfunction":
+						{
+							d[i].drawfunction ? d[i].drawfunction(ct) : C_GUI.tools.defaultPathFun(ct, d[i]);
 							break;
 						}
-						default:{
+					default:
+						{
 							C_GUI.tools.defaultPathFun(ct, d[i]);
 						}
 					}
@@ -701,7 +720,7 @@ function newC_GUI() {
 					{
 						ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
 						if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
-							ct.drawImage(d[i].imageobj,0, 0);
+							ct.drawImage(d[i].imageobj, 0, 0);
 						}
 						break;
 					}
@@ -711,7 +730,7 @@ function newC_GUI() {
 					if (C_GUI.mouseX) {
 						if (d[i].overPath) {
 							d[i].overPath(ct);
-						}else if(d[i].drawfunction){
+						} else if (d[i].drawfunction) {
 							d[i].drawfunction(ct);
 						} else {
 							C_GUI.tools.defaultPathFun(ct, d[i]);
@@ -720,7 +739,7 @@ function newC_GUI() {
 							C_GUI.newonoverElement = d[i];
 							if (C_GUI.Debug.stat) {
 								ct.save();
-								ct.globalCompositeOperation="lighter";
+								ct.globalCompositeOperation = "lighter";
 								ct.fillStyle = "rgba(255,255,255,0.3)";
 								ct.fill();
 								ct.restore();
@@ -729,51 +748,51 @@ function newC_GUI() {
 
 					}
 				}
-					if (C_GUI.Debug.stat) {
-						ct.save();
-						ct.beginPath();
-						ct.strokeRect(0, 0, d[i].width, d[i].height);
-						ct.stroke();
-						var zx = d[i].zoom.x,
-						zy = d[i].zoom.y;
-						if (d[i].parentNode) {
-							zx *= d[i].parentNode.zoom.x;
-							zy *= d[i].parentNode.zoom.y;
-						}
-						ct.scale(1 / zx, 1 / zy);
-						ct.textBaseline = "top";
-						ct.fillStyle = "rgba(0,0,0,1)";
-						ct.font = "20px Arial";
-						switch (d[i].drawtype) {
-						case "function":
-							{
-								ct.fillText("Function", 0, 0);
-								break;
-							}
-
-						case "image":
-							{
-								ct.fillText("Image", 0, 0);
-								break;
-							}
-						case "text":
-							{
-								ct.fillText("Text", 0, 0);
-								ct.font = "12px Arial";
-								ct.fillText("font:" + d[i].font, 0, -12);
-								break;
-							}
-						}
-						if (C_GUI.Debug.eleinfo) {
-							ct.font = "10px Arial";
-							ct.fillText("X:" + d[i].x + " " + "Y:" + d[i].y, 0, 21);
-							ct.fillText("rotate:" + d[i].rotate, 0, 31);
-							ct.fillText("zoom:" + d[i].zoom.x + "," + d[i].zoom.y, 0, 41);
-							ct.fillText("RotatePotint:" + d[i].rotatecenter.x + " " + d[i].rotatecenter.y, 0, 51);
-							ct.fillText("Size:" + d[i].width + "*" + d[i].height, 0, 61);
-						}
-						ct.restore();
+				if (C_GUI.Debug.stat) {
+					ct.save();
+					ct.beginPath();
+					ct.strokeRect(0, 0, d[i].width, d[i].height);
+					ct.stroke();
+					var zx = d[i].zoom.x,
+					zy = d[i].zoom.y;
+					if (d[i].parentNode) {
+						zx *= d[i].parentNode.zoom.x;
+						zy *= d[i].parentNode.zoom.y;
 					}
+					ct.scale(1 / zx, 1 / zy);
+					ct.textBaseline = "top";
+					ct.fillStyle = "rgba(0,0,0,1)";
+					ct.font = "20px Arial";
+					switch (d[i].drawtype) {
+					case "function":
+						{
+							ct.fillText("Function", 0, 0);
+							break;
+						}
+
+					case "image":
+						{
+							ct.fillText("Image", 0, 0);
+							break;
+						}
+					case "text":
+						{
+							ct.fillText("Text", 0, 0);
+							ct.font = "12px Arial";
+							ct.fillText("font:" + d[i].font, 0, -12);
+							break;
+						}
+					}
+					if (C_GUI.Debug.eleinfo) {
+						ct.font = "10px Arial";
+						ct.fillText("X:" + d[i].x + " " + "Y:" + d[i].y, 0, 21);
+						ct.fillText("rotate:" + d[i].rotate, 0, 31);
+						ct.fillText("zoom:" + d[i].zoom.x + "," + d[i].zoom.y, 0, 41);
+						ct.fillText("RotatePotint:" + d[i].rotatecenter.x + " " + d[i].rotatecenter.y, 0, 51);
+						ct.fillText("Size:" + d[i].width + "*" + d[i].height, 0, 61);
+					}
+					ct.restore();
+				}
 				ct.restore();
 				if (d[i].afterdrawfun) d[i].afterdrawfun(ct);
 				ct.restore();
@@ -822,7 +841,7 @@ function newC_GUI() {
 			C_GUI.cct.textBaseline = "bottom";
 			C_GUI.cct.globalCompositeOperation = "lighter";
 			C_GUI.cct.fillStyle = "red";
-			C_GUI.cct.fillText("mouseX:" + C_GUI.mouseX + " Y:" + C_GUI.mouseY + " mouseL:" + C_GUI.mouseleft + " C:" + C_GUI.mousecenter + " R:" + C_GUI.mouseright+" FPS:"+C_GUI.fps.v, 0, C_GUI.canvas.height);
+			C_GUI.cct.fillText("mouseX:" + C_GUI.mouseX + " Y:" + C_GUI.mouseY + " mouseL:" + C_GUI.mouseleft + " C:" + C_GUI.mousecenter + " R:" + C_GUI.mouseright + " FPS:" + C_GUI.fps.v, 0, C_GUI.canvas.height);
 			C_GUI.cct.strokeStyle = "red";
 			C_GUI.cct.globalCompositeOperation = "source-over";
 			C_GUI.cct.moveTo(C_GUI.mouseX, C_GUI.mouseY + 6);
@@ -937,7 +956,13 @@ function newC_GUI() {
 			return a.z_index - b.z_index;
 		},
 		arraybyZ_index: function(graph) { //让图形的子元素排序
-			if (graph.childNode) graph.drawlist = graph.childNode.sort(C_GUI.tools.paixurule);
+			if(graph.childNode){
+				graph.drawlist= graph.childNode.slice(0);
+				graph.drawlist.sort(C_GUI.tools.paixurule);
+				for(var i=0;graph.drawlist[i];i++){}
+					graph.drawlist.length=i;
+			}
+			//if (graph.childNode) graph.drawlist = graph.childNode.sort(C_GUI.tools.paixurule);
 		},
 		defaultPathFun: function(ct, graph) {
 			ct.rect(0, 0, graph.width, graph.height);
@@ -958,9 +983,9 @@ function newC_GUI() {
 		rand: function(min, max) { //范围随机数
 			return Math.floor(min + Math.random() * (max - min));
 		},
-		fpscounter:function(){
-			C_GUI.fps.v=C_GUI.fps.c;
-			C_GUI.fps.c=0;
+		fpscounter: function() {
+			C_GUI.fps.v = C_GUI.fps.c;
+			C_GUI.fps.c = 0;
 		}
 	};
 
@@ -968,41 +993,41 @@ function newC_GUI() {
 		stat: false,
 		eleinfo: false,
 		on: function() {
-			if(!C_GUI.Debug.stat){
-						C_GUI.Debug.stat = true;
-						clearInterval(C_GUI.fps.i);
-						C_GUI.fps.c=0;
-						C_GUI.fps.i=setInterval(C_GUI.tools.fpscounter,1000);}
+			if (!C_GUI.Debug.stat) {
+				C_GUI.Debug.stat = true;
+				clearInterval(C_GUI.fps.i);
+				C_GUI.fps.c = 0;
+				C_GUI.fps.i = setInterval(C_GUI.tools.fpscounter, 1000);
+			}
 		},
 		off: function() {
-			if(C_GUI.Debug.stat){
-						C_GUI.Debug.stat = false;
-						clearInterval(C_GUI.fps.i);}
+			if (C_GUI.Debug.stat) {
+				C_GUI.Debug.stat = false;
+				clearInterval(C_GUI.fps.i);
+			}
 		}
 	};
 	return C_GUI;
-}
-(function() {
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelRequestAnimationFrame = window[vendors[x]+
-          'CancelRequestAnimationFrame'];
-    }
+} (function() {
+	var lastTime = 0;
+	var vendors = ['ms', 'moz', 'webkit', 'o'];
+	for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+		window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+		window.cancelRequestAnimationFrame = window[vendors[x] + 'CancelRequestAnimationFrame'];
+	}
 
-    if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
-              timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
+	if (!window.requestAnimationFrame) window.requestAnimationFrame = function(callback, element) {
+		var currTime = new Date().getTime();
+		var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+		var id = window.setTimeout(function() {
+			callback(currTime + timeToCall);
+		},
+		timeToCall);
+		lastTime = currTime + timeToCall;
+		return id;
+	};
 
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
-}());
+	if (!window.cancelAnimationFrame) window.cancelAnimationFrame = function(id) {
+		clearTimeout(id);
+	};
+} ());
