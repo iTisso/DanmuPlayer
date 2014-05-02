@@ -57,7 +57,8 @@ function optioneles(){
                     </div>
                     <div id="fontColor">
                         <span>颜色</span>
-                        <input id="colorinput" placeholder="FFFFFF"/>
+                        <input id="colorinput" placeholder="FFFFFF" type="color"/>
+                        <div id="colorview"></div>
                     </div>
                 </div>
                 </div>

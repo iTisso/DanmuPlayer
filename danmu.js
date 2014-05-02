@@ -226,13 +226,23 @@ function isHexColor(color) {
 	if (color) {
 		if (color.match(/[\w\d]{6}/i)) {
 			return true;
-
 		} else {
 			return false;
 		}
 	} else {
 		return false;
 	}
+}
+function toHexColor(colorString){
+	var c=colorString.match(/(\d+)/g);
+	console.log(c)
+	if(!c||c.length!=3)return false;
+	var cs="";
+	for(var i=0;i<c.length;i++){
+		if(c[i]<=16)cs+="0";
+		cs+=Number(c[i]).toString(16);
+	}
+	return cs;
 }
 function initPlayer(_in_videoid) {
 	var videoid = _in_videoid;
@@ -277,6 +287,7 @@ function initPlayer(_in_videoid) {
 		player.mainbody = d_select(".playermainbody[videoid='" + videoid + "']");
 		player.controler = d_select(player.mainbody, "#controler");
 		player.colorinput = d_select(player.mainbody, "#colorinput");
+		player.colorview = d_select(player.mainbody, "#colorview");
 		player.sendcover = d_select(player.mainbody, "#sendbox #sendboxcover");
 		player.danmuframe = d_select(player.mainbody, "#videoframe #danmuframe");
 		player.danmulayer = d_select(player.mainbody, "#danmuframe #danmulayer");
@@ -612,7 +623,7 @@ function initPlayer(_in_videoid) {
 				} else {
 					type = 0;
 				}
-				var color=player.colorinput.value;
+				var color=player.colorinput.value.replace("#","");
 				if(!isHexColor(color)){
 					color=null;
 				}
@@ -1053,6 +1064,14 @@ function initPlayer(_in_videoid) {
 			if (COL.mouseright) {
 				e.stopPropagation();
 				//
+			}
+		});
+		aEL(player.colorinput,"input",function(){
+			if(isHexColor(player.colorinput.value)){
+				var co=player.colorinput.value.replace("#","");
+					player.colorview.style.backgroundColor="#"+co;
+			}else{
+				player.colorview.style.backgroundColor="#ffffff";
 			}
 		});
 		aEL(window,"resize",function(){
