@@ -172,7 +172,7 @@ function createswitch(in_name, in_bool, in_colorleft, in_colorright, out_object)
 	e.event = new Object();
 	e.event.on = function() {
 		e.event.bool = true;
-		e.getElementsByTagName("div")[0].style.left = "55px";
+		e.getElementsByTagName("div")[0].style.left = e.offsetWidth-15+"px";
 	}
 	e.event.off = function() {
 		e.event.bool = false;
@@ -197,9 +197,9 @@ function createswitch(in_name, in_bool, in_colorleft, in_colorright, out_object)
 		}
 	}
 	e.style.position = "relative";
-	e.style.width = "70px";
-	e.style.height = "20px";
-	e.style.overflow = "hidden";
+	/*e.style.width = "70px";
+	e.style.height = "20px";*/
+	//e.style.overflow = "hidden";
 	e.innerHTML = '<div class="switch_center" style="left:' + (e.event.bool ? "55px": "0px") + '""><div class="switch_left" style="background-color:' + in_colorleft + '"></div><div class="switch_right" style="background-color:' + in_colorright + '"></div></div>';
 	if (!out_object) {
 		return e;
@@ -226,13 +226,23 @@ function isHexColor(color) {
 	if (color) {
 		if (color.match(/[\w\d]{6}/i)) {
 			return true;
-
 		} else {
 			return false;
 		}
 	} else {
 		return false;
 	}
+}
+function toHexColor(colorString){
+	var c=colorString.match(/(\d+)/g);
+	console.log(c)
+	if(!c||c.length!=3)return false;
+	var cs="";
+	for(var i=0;i<c.length;i++){
+		if(c[i]<=16)cs+="0";
+		cs+=Number(c[i]).toString(16);
+	}
+	return cs;
 }
 function initPlayer(_in_videoid) {
 	var videoid = _in_videoid;
@@ -277,6 +287,7 @@ function initPlayer(_in_videoid) {
 		player.mainbody = d_select(".playermainbody[videoid='" + videoid + "']");
 		player.controler = d_select(player.mainbody, "#controler");
 		player.colorinput = d_select(player.mainbody, "#colorinput");
+		player.colorview = d_select(player.mainbody, "#colorview");
 		player.sendcover = d_select(player.mainbody, "#sendbox #sendboxcover");
 		player.danmuframe = d_select(player.mainbody, "#videoframe #danmuframe");
 		player.danmulayer = d_select(player.mainbody, "#danmuframe #danmulayer");
@@ -342,19 +353,23 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	function setPlayOption() {
-		player.o = {},
-		player.assvar = {},
-		player.switchs = {};
+		
 		player.o.recycle = false;
 
 	}
 	function loadoption() {
-		console.log("加载设置");
+		//console.log("加载设置");
 		newstat("加载设置");
+player.o = {},
+		player.assvar = {},
+		player.switchs = {};
 		controlfuns.sidebar_show();
 		if (getOption("Debug") == "true") {
 			COL.Debug.on();
 		}
+		player.o.RealtimeVary=getOption("RealtimeVary");
+
+
 	}
 	function loadvideo() {
 		console.log("加载视频");
@@ -447,16 +462,17 @@ function initPlayer(_in_videoid) {
 				listdanmu();
 				danmufuns.refreshnumber();
 				danmufuns.setTimeline();
+				danmufuns.initFirer();
 				//danmuListener();
-				if (!danmufirer) {
+				/*if (!danmufirer) {
 					if (window.Worker) {
 						danmufirer = new Worker("danmufirer.js");
-						danmufuns.initFirer();
+						
 					} else {
 						newstat("无法显示弹幕");
 						return;
 					}
-				}
+				}*/
 			}
 			danmufuns.show();
 		});
@@ -532,7 +548,7 @@ function initPlayer(_in_videoid) {
 				danmufuns.fire(timepoint);
 			}
 			timepoint += 10;
-			if (i == 24 || player.video.paused) {
+			if (i == 25 || player.video.paused) {
 				clearInterval(interval.timer);
 			}
 			i++;
@@ -549,6 +565,7 @@ function initPlayer(_in_videoid) {
 	}
 	danmufuns = {
 		createCommonDanmu: function(danmuobj, tunnelobj) {
+			if(!interval.movedanmu)return;
 			var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
 			var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
 			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s + "px", {
@@ -556,7 +573,8 @@ function initPlayer(_in_videoid) {
 				textborderColor: bordercolor,
 				textborderWidth: 0.6,
 				type: danmuobj.ty,
-				fontWeight:600
+				fontWeight:600,
+				realtimeVary:player.o.RealtimeVary
 			});
 			TextDanmu.tunnelobj = tunnelobj;
 			switch (danmuobj.ty) {
@@ -612,7 +630,7 @@ function initPlayer(_in_videoid) {
 				} else {
 					type = 0;
 				}
-				var color=player.colorinput.value;
+				var color=player.colorinput.value.replace("#","");
 				if(!isHexColor(color)){
 					color=null;
 				}
@@ -774,20 +792,20 @@ function initPlayer(_in_videoid) {
 		initFirer: function() {
 			danmufuns.setDanmuArray();
 
-			danmufirer.addEventListener('message',
+			/*danmufirer.addEventListener('message',
 			function(e) {
 				console.log(e.data);
 				if (!player.video.paused) {
 					//danmufuns.fire(e.data);
 				}
 			},
-			false);
+			false);*/
 		},
 		mover: function() {
 			if (!player.video.paused) {
 				var precentageAdd = moverInterval / moveTime;
-				for (var i in danmucontainer.childNode) {
-					var node = danmucontainer.childNode[i];
+				for (var i =0;i< danmucontainer.drawlist.length;i++) {
+					var node = danmucontainer.drawlist[i];
 					if (!node) continue;
 					switch (node.type) {
 					case 0:
@@ -856,7 +874,6 @@ function initPlayer(_in_videoid) {
 			}
 		},
 		fire: function(t) {
-			//console.log(t)
 			//console.log("FirePoint:" + t + " VideoTime:" + getVideoMillionSec());
 			if (danmuarray[t]) {
 				var sendsanmus = [];
@@ -881,7 +898,7 @@ function initPlayer(_in_videoid) {
 				}
 			}
 			timeline = tarr;
-			console.log("重置时间轴");
+			//console.log("重置时间轴");
 		},
 		refreshnumber: function() {
 			if (danmucount >= 0) {
@@ -951,7 +968,13 @@ function initPlayer(_in_videoid) {
 	controlfuns.gototime = function() {}
 	controlfuns.loading = function() {}
 	controlfuns.ended = function() {
+danmutunnel = {
+		right: [],
+		left: [],
+		bottom: [],
+		top: []
 
+	}
 }
 	controlfuns.volumestatchange = function() {
 
@@ -979,7 +1002,7 @@ function initPlayer(_in_videoid) {
 			}
 
 			//绘制已播放区域
-			ct.fillStyle = "#2A4580";
+			ct.fillStyle = "#ffcc66";
 			var tr = player.video.played;
 			for (var i = 0; i < tr.length; i++) {
 				ct.fillRect(tr.start(i) / d * Xw, 18, (tr.end(i) - tr.start(i)) / d * Xw, 4);
@@ -1053,6 +1076,14 @@ function initPlayer(_in_videoid) {
 			if (COL.mouseright) {
 				e.stopPropagation();
 				//
+			}
+		});
+		aEL(player.colorinput,"input",function(){
+			if(isHexColor(player.colorinput.value)){
+				var co=player.colorinput.value.replace("#","");
+					player.colorview.style.backgroundColor="#"+co;
+			}else{
+				player.colorview.style.backgroundColor="#ffffff";
 			}
 		});
 		aEL(window,"resize",function(){
@@ -1129,6 +1160,16 @@ function initPlayer(_in_videoid) {
 					}
 					break;
 				}
+			}
+		});
+		aEL(player.switchs.RealtimeVary, "click",
+		function() {
+			if (player.switchs.RealtimeVary.event.bool) {
+				player.o.RealtimeVary=true;
+				setOption("RealtimeVary", "true");
+			} else {
+				player.o.RealtimeVary=false;
+				setOption("RealtimeVary", "false");
 			}
 		});
 		aEL(player.switchs.Debug, "click",
@@ -1395,11 +1436,6 @@ function initPlayer(_in_videoid) {
 			//console.log("事件:音量");
 			controlfuns.volumechange();
 		});
-		aEL(video, "abort",
-		function() {
-			console.log("事件:媒体加载中断");
-
-		});
 		//以下两个事件在火狐中持续触发
 		/*aEL(video, "canplay",
 		function() {
@@ -1410,28 +1446,24 @@ function initPlayer(_in_videoid) {
 			//console.log("事件:媒体可流畅播放");
 
 		});*/
-		aEL(video, "durationchange",
+		/*aEL(video, "durationchange",
 		function() {
 			console.log("事件:媒体长度改变");
 
-		});
+		});*/
 		aEL(video, "loadstart",
 		function() {
 			console.log("事件:开始加载媒体");
 			controlfuns.refreshprogresscanvas();
-
 		});
-		aEL(video, "abort",
+		/*aEL(video, "abort",
 		function() {
 			console.log("事件:媒体加载中断");
-
-		});
+		});*/
 		aEL(video, "playing",
 		function() {
-			//console.log("事件:播放中");
 			controlfuns.playing();
 			player.assvar.isPaused=false;
-			//newstat("播放中");
 		});
 		aEL(video, "progress",
 		function() {
@@ -1440,22 +1472,21 @@ function initPlayer(_in_videoid) {
 		});
 		aEL(video, "seeked",
 		function() {
-			console.log("事件:已跳到新位置");
+			//console.log("事件:已跳到新位置");
 			timepoint = getVideoMillionSec();
 			controlfuns.refreshprogresscanvas();
 			danmufuns.clear();
-			//danmufuns.refreshtimeline();
 		});
 		aEL(video, "seeking",
 		function() {
-			console.log("事件:正在跳到新位置");
+			//console.log("事件:正在跳到新位置");
 			timepoint = getVideoMillionSec();
 		});
-		aEL(video, "stalled",
+		/*aEL(video, "stalled",
 		function() {
 			console.log("事件:无法获取媒体");
 
-		});
+		});*/
 		//aEL(video,"suspend",function(){
 		//console.log("事件:浏览器故意不加载媒体（ーー；）");
 		//});

@@ -466,6 +466,13 @@ width: 72px;
 border: 1px solid #ccc;
 border-radius: 2px;
 }
+.playermainbody  #fontColor #colorview{
+width: 72px;
+border: 1px solid #ccc;
+height: 72px;
+border-radius: 2px;
+cursor: pointer;
+}
 .playermainbody #sendbox #danmuinput{
 	position: absolute;
 background-color: #FFFFFF;
@@ -642,7 +649,14 @@ width: 100%;
 .playermainbody #sidebar #tabpages #optionpannel {
 	display: none;
 }
-
+.playermainbody #sidebar #optionpannel h3{
+margin: 2px 8px;
+}
+.playermainbody #sidebar #optionpannel span{
+display: block;
+padding-left: 3px;
+position: relative;
+}
 .playermainbody #sidebar #ctrlpannel .ctrlbutton{
 position: absolute;
 bottom: 0px;
@@ -673,6 +687,12 @@ left: 66.6%;
 	}
 .tabpage div[type="switch"]{
 		cursor: pointer;
+		position: absolute !important;
+right: 16px;
+top: 0px;
+width: 70px;
+height: 20px;
+overflow: hidden;;
 	}
 .tabpage .switch_center{
 		position:absolute;height:100%;width:15px;background-color:#ccc;
