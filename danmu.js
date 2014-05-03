@@ -264,7 +264,7 @@ function initPlayer(_in_videoid) {
 		top: []
 
 	},
-	moverInterval = 16,
+	moverInterval = 1000/61,
 	moveTime = 5000,
 	tunnelheight = 0,
 	onshowdanmulist = [],
@@ -360,7 +360,7 @@ function initPlayer(_in_videoid) {
 	function loadoption() {
 		//console.log("加载设置");
 		newstat("加载设置");
-player.o = {},
+		player.o = {},
 		player.assvar = {},
 		player.switchs = {};
 		controlfuns.sidebar_show();
@@ -531,7 +531,7 @@ player.o = {},
 		}
 	}
 	function newTimePiece(t) {
-		if (player.video.paused) return;
+		if (!player.assvar.isPlaying) return;
 		if (t >= timepoint) {
 			for (var i = timepoint; i <= t; i+=10) {
 				if (timeline[i]) danmufuns.fire(i);
@@ -802,7 +802,7 @@ player.o = {},
 			false);*/
 		},
 		mover: function() {
-			if (!player.video.paused) {
+			if (player.assvar.isPlaying) {
 				var precentageAdd = moverInterval / moveTime;
 				for (var i =0;i< danmucontainer.drawlist.length;i++) {
 					var node = danmucontainer.drawlist[i];
@@ -975,6 +975,7 @@ danmutunnel = {
 		top: []
 
 	}
+	//danmufuns.clear();
 }
 	controlfuns.volumestatchange = function() {
 
@@ -1417,7 +1418,7 @@ danmutunnel = {
 		function() {
 			//console.log("事件:暂停");
 			//newstat("暂停");
-
+			player.assvar.isPlaying=false;
 			controlfuns.pause();
 		});
 		aEL(video, "ended",
@@ -1463,7 +1464,7 @@ danmutunnel = {
 		aEL(video, "playing",
 		function() {
 			controlfuns.playing();
-			player.assvar.isPaused=false;
+			player.assvar.isPlaying=true;
 		});
 		aEL(video, "progress",
 		function() {
@@ -1493,6 +1494,7 @@ danmutunnel = {
 		aEL(video, "timeupdate",
 		function() {
 			//console.log("事件:播放时间改变  "+video.currentTime);
+			//player.assvar.isPlaying=true;
 			controlfuns.refreshprogresscanvas();
 			controlfuns.refreshtime();
 			newTimePiece(getVideoMillionSec());
@@ -1501,6 +1503,7 @@ danmutunnel = {
 		function() {
 			//console.log("事件:媒体缓冲中");
 			newstat("缓冲中..");
+			player.assvar.isPlaying=false;
 
 		});
 		aEL(video, "error",
