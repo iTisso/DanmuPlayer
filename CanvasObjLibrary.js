@@ -478,9 +478,6 @@ function newC_GUI() {
 					}
 				},
 				removeChild: function(graph) {
-					/*for (var i = 0; graph.GraphID !=this.childNode[i].GraphID; i++) {
-						if (i == this.childNode.length) break;
-					}*/
 					if (this.childNode[graph.GraphID]) {
 						//this.childNode[graph.GraphID] = null;
 						graph.parentNode = null;
@@ -493,37 +490,8 @@ function newC_GUI() {
 									}
 									ind++;
 								}
-						//delete this.drawlist[graph.GraphID];
-						/*this.drawlist.splice(graph.GraphID, 1);
-						this.childNode.splice(graph.GraphID, 1);*/
-						/*var i = 0;
-						for (var eles in this.childNode) {
-							if (!this.childNode[eles]) {
-								this.childNode.splice(graph.GraphID], 1);
-								/*
-								for (var eles in this.childNode) {
-									this.drawlist[ind] = this.childNode[eles];
-									ind++;
-								}*/
-								/*var ind = 0;
-								for(var ele in this.drawlist){
-									if(this.drawlist[ele].GraphID==graph.GraphID){
-										this.drawlist.splice(ind, 1);
-										break;
-									}
-									ind++;
-								}
-								i--;
-								this.drawlist.splice(eles, 1);
-							}
-							i++;
-						}*/
+						
 					}
-					/*if (graph.GraphID==this.childNode[i].GraphID) {
-						this.childNode.splice(i, 1);
-						C_GUI.tools.arraybyZ_index(this);
-						//graph.parentNode = null;
-					}*/
 				}
 			};
 			return g;
@@ -567,12 +535,37 @@ function newC_GUI() {
 					t[ob] = opjson[ob];
 				}
 			}
+			t.vary=function(ct){
+				ct.translate(0, this.imageobj.height / 2);
+				ct.textBaseline = this.baseline;
+				ct.lineWidth = this.textborderWidth;
+				ct.strokeStyle = this.textborderColor;
+				ct.fillStyle = this.color || C_GUI.font.color || "#000";
+				//ct.save();
+				if (this.shadowBlur > 0) {
+					ct.font = font;
+					ct.shadowBlur = this.shadowBlur;
+					ct.shadowColor = this.shadowColor;
+					ct.shadowOffsetX = this.shadowOffset.x;
+					ct.shadowOffsetY = this.shadowOffset.y;
+				}
+				ct.font = this.font;
+				if (this.fill) {
+					ct.fillText(this.text, this.innerX, this.innerY);
+				}
+				if (this.textborderWidth) {
+					ct.strokeText(this.text, this.innerX, this.innerY);
+				}
+			}
 			t.prepareText = function() {
+				/*if(!t.realtimeVary){
+					
+				}*/
 				if (!t.imageobj) {
 					t.imageobj = document.createElement("canvas");
-				}
-				var ct = t.imageobj.getContext("2d");
-				//ct.clearRect(0, 0, t.imageobj.width, t.imageobj.height);
+					}var ct = t.imageobj.getContext("2d");
+					ct.clearRect(0, 0, t.imageobj.width, t.imageobj.height);
+				
 				var font = "";
 				if (t.fontStyle || C_GUI.font.fontStyle) font += t.fontStyle || C_GUI.font.fontStyle;
 				if (t.fontVariant || C_GUI.font.fontVariant) font += (" " + (t.fontVariant || C_GUI.font.fontVariant));
@@ -583,8 +576,9 @@ function newC_GUI() {
 				else {
 					font += (" " + C_GUI.fontFamily);
 				}
-				ct.font = font;
+				
 				t.font = font;
+				ct.font = font;
 				if (t.autoSize) {
 					var w = ct.measureText(t.text).width;
 					t.width = t.imageobj.width = (t.maxWidth >= w) ? t.maxWidth: w;
@@ -597,7 +591,7 @@ function newC_GUI() {
 					t.imageobj.width = t.width || 100;
 					t.imageobj.height = t.height || 30;
 				}
-				ct.translate(0, t.imageobj.height / 2);
+				/*ct.translate(0, t.imageobj.height / 2);
 				ct.textBaseline = t.baseline;
 				ct.lineWidth = t.textborderWidth;
 				ct.strokeStyle = t.textborderColor;
@@ -616,8 +610,8 @@ function newC_GUI() {
 				}
 				if (t.textborderWidth) {
 					ct.strokeText(t.text, t.innerX, t.innerY);
-				}
-
+				}*/
+				t.vary(ct);
 				ct.restore();
 			};
 			t.setSize = function(width, height) {
@@ -716,12 +710,27 @@ function newC_GUI() {
 						break;
 					}
 				case "image":
+				{
+						ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
+							if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
+							ct.drawImage(d[i].imageobj, 0, 0);
+						}
+						
+						break;
+					}
 				case "text":
 					{
 						ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
-						if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
+						if(d[i].realtimeVary){
+							ct.save();
+							d[i].vary(ct);
+							ct.restore();
+						}else{
+							if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
 							ct.drawImage(d[i].imageobj, 0, 0);
 						}
+						}
+						
 						break;
 					}
 				}

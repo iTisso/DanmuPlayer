@@ -32,8 +32,12 @@ function optioneles(){
                    <div id="superdanmueditor" class="tabpage"></div>
                  <div id="optionpannel" class="tabpage">
                  <div>
-                      开发
-                      <div>弹幕层Debug:<div switch name="Debug"></div></div>
+                     <h3> 效果</h3>
+                      <span>弹幕实时渲染:<div switch name="RealtimeVary"></div></span>
+                 </div>
+                 <div>
+                      <h3>开发</h3>
+                      <span>弹幕层Debug:<div switch name="Debug"></div></span>
                  </div>
                  </div>
                 </div>
@@ -57,7 +61,7 @@ function optioneles(){
                     </div>
                     <div id="fontColor">
                         <span>颜色</span>
-                        <input id="colorinput" placeholder="FFFFFF" type="color"/>
+                        <input id="colorinput" placeholder="FFFFFF"/>
                         <div id="colorview"></div>
                     </div>
                 </div>
