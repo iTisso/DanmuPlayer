@@ -32,6 +32,10 @@ function optioneles(){
                    <div id="superdanmueditor" class="tabpage"></div>
                  <div id="optionpannel" class="tabpage">
                  <div>
+                     <h3> 播放器设置</h3>
+                      <span>默认隐藏边栏:<div switch name="DefaultHideSideBar"></div></span>
+                 </div>
+                 <div>
                      <h3> 效果</h3>
                       <span>弹幕实时渲染:<div switch name="RealtimeVary"></div></span>
                  </div>
