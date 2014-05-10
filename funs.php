@@ -3,7 +3,7 @@ require_once("config.php");
 
 function connectSQL(){
 	Global $SQL;
-	$SQL=mysqli_connect(sqlAddress,sqlUser,sqlPass,"danmu");
+	$SQL=mysqli_connect(sqlAddress,sqlUser,sqlPass,dbname);
 if (!$SQL)
   {
   die('Could not connect: ' . mysqli_connect_error());

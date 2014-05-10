@@ -591,26 +591,6 @@ function newC_GUI() {
 					t.imageobj.width = t.width || 100;
 					t.imageobj.height = t.height || 30;
 				}
-				/*ct.translate(0, t.imageobj.height / 2);
-				ct.textBaseline = t.baseline;
-				ct.lineWidth = t.textborderWidth;
-				ct.strokeStyle = t.textborderColor;
-				ct.fillStyle = t.color || C_GUI.font.color || "#000";
-				ct.save();
-				if (t.shadowBlur > 0) {
-					ct.font = font;
-					ct.shadowBlur = t.shadowBlur;
-					ct.shadowColor = t.shadowColor;
-					ct.shadowOffsetX = t.shadowOffset.x;
-					ct.shadowOffsetY = t.shadowOffset.y;
-				}
-				ct.font = font;
-				if (t.fill) {
-					ct.fillText(t.text, t.innerX, t.innerY);
-				}
-				if (t.textborderWidth) {
-					ct.strokeText(t.text, t.innerX, t.innerY);
-				}*/
 				t.vary(ct);
 				ct.restore();
 			};
@@ -667,7 +647,6 @@ function newC_GUI() {
 
 	C_GUI.drawElement = function(d, ct) {
 		for (var i = 0; i < d.length; i++) {
-			//if(!d[i])continue;
 			if (d[i].display) {
 				ct.save();
 				ct.translate(d[i].x + d[i].rotatecenter.x - d[i].positionpoint.x, d[i].y + d[i].rotatecenter.y - d[i].positionpoint.y);
@@ -758,10 +737,11 @@ function newC_GUI() {
 					}
 				}
 				if (C_GUI.Debug.stat) {
+					C_GUI.Debug.itemcount++;
 					ct.save();
 					ct.beginPath();
 					ct.strokeRect(0, 0, d[i].width, d[i].height);
-					ct.stroke();
+					//ct.stroke();
 					var zx = d[i].zoom.x,
 					zy = d[i].zoom.y;
 					if (d[i].parentNode) {
@@ -838,27 +818,31 @@ function newC_GUI() {
 	// var cct;
 	C_GUI.draw = function() {
 		C_GUI.newonoverElement = null;
+		var cct=C_GUI.cct;
+		if(C_GUI.Debug.stat){
+			C_GUI.Debug.itemcount=0;
+		}
 		if (C_GUI.autoClear) {
-			C_GUI.context.clearRect(0, 0, C_GUI.canvas.width, C_GUI.canvas.height);
+			cct.clearRect(0, 0, C_GUI.canvas.width, C_GUI.canvas.height);
 			if (C_GUI.buffercontext) C_GUI.buffercontext.clearRect(0, 0, C_GUI.document.width, C_GUI.document.height);
 		}
 		C_GUI.drawElement(C_GUI.drawlist, C_GUI.currentcontext);
 		if (C_GUI.Debug.stat) {
-			C_GUI.cct.save();
-			C_GUI.cct.setTransform(1, 0, 0, 1, 0, 0);
-			C_GUI.cct.font = "16px Arial";
-			C_GUI.cct.textBaseline = "bottom";
-			C_GUI.cct.globalCompositeOperation = "lighter";
-			C_GUI.cct.fillStyle = "red";
-			C_GUI.cct.fillText("mouseX:" + C_GUI.mouseX + " Y:" + C_GUI.mouseY + " mouseL:" + C_GUI.mouseleft + " C:" + C_GUI.mousecenter + " R:" + C_GUI.mouseright + " FPS:" + C_GUI.fps.v, 0, C_GUI.canvas.height);
-			C_GUI.cct.strokeStyle = "red";
-			C_GUI.cct.globalCompositeOperation = "source-over";
-			C_GUI.cct.moveTo(C_GUI.mouseX, C_GUI.mouseY + 6);
-			C_GUI.cct.lineTo(C_GUI.mouseX, C_GUI.mouseY - 6);
-			C_GUI.cct.moveTo(C_GUI.mouseX - 6, C_GUI.mouseY);
-			C_GUI.cct.lineTo(C_GUI.mouseX + 6, C_GUI.mouseY);
-			C_GUI.cct.stroke();
-			C_GUI.cct.restore();
+			cct.save();
+			cct.setTransform(1, 0, 0, 1, 0, 0);
+			cct.font = "16px Arial";
+			cct.textBaseline = "bottom";
+			cct.globalCompositeOperation = "lighter";
+			cct.fillStyle = "red";
+			cct.fillText("mouseX:" + C_GUI.mouseX + " Y:" + C_GUI.mouseY + " mouseL:" + C_GUI.mouseleft + " C:" + C_GUI.mousecenter + " R:" + C_GUI.mouseright + " FPS:" + C_GUI.fps.v+" Items:"+C_GUI.Debug.itemcount, 0, C_GUI.canvas.height);
+			cct.strokeStyle = "red";
+			cct.globalCompositeOperation = "source-over";
+			cct.moveTo(C_GUI.mouseX, C_GUI.mouseY + 6);
+			cct.lineTo(C_GUI.mouseX, C_GUI.mouseY - 6);
+			cct.moveTo(C_GUI.mouseX - 6, C_GUI.mouseY);
+			cct.lineTo(C_GUI.mouseX + 6, C_GUI.mouseY);
+			cct.stroke();
+			cct.restore();
 			C_GUI.fps.c++;
 		}
 		if (C_GUI.newonoverElement != C_GUI.onoverElement) {
@@ -1001,6 +985,7 @@ function newC_GUI() {
 	C_GUI.Debug = {
 		stat: false,
 		eleinfo: false,
+		itemcount:0,
 		on: function() {
 			if (!C_GUI.Debug.stat) {
 				C_GUI.Debug.stat = true;
