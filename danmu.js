@@ -233,7 +233,7 @@ function createRange(in_name, min,max ,value, out_object){
 			var x=e.offsetX||e.layerX
 			this.point.style.left=x+"px";
 			var va=this.min+(x/this.offsetWidth)*(this.max-this.min);
-			this.title=Math.round((this.value=va)*100)/100;
+			//this.title=Math.round((this.value=va)*100)/100;
 			this.sendValue(this.name,va);
 		}else if(e.button==2){
 			var x=this.offsetWidth*(this.default-this.min)/(this.max-this.min);
@@ -246,13 +246,15 @@ function createRange(in_name, min,max ,value, out_object){
 		e.preventDefault();
 	}
 	e.onmousemove=function(e){e.preventDefault();
+		var x=e.offsetX||e.layerX;
 		if(this.ranging){
-			var x=e.offsetX||e.layerX;
+			
 			this.point.style.left=x+"px";
 			var va=this.min+(x/this.offsetWidth)*(this.max-this.min);
-			this.title=Math.round((this.value=va)*100)/100;
+			//this.title=Math.round((this.value=va)*100)/100;
 			this.sendValue(this.name,va);
 		}
+		this.title=Math.round((this.min+(x/this.offsetWidth)*(this.max-this.min))*1000)/1000;
 	}
 	e.onmouseleave=function(){
 		this.ranging=false;
@@ -423,6 +425,7 @@ function initPlayer(_in_videoid) {
 	}
 	function setPlayOption() {
 		player.o.recycle = false;
+		//player.o.playspeed = 1;
 
 	}
 	function setDefaultOption(){
@@ -621,29 +624,29 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	function newTimePiece(t) {
-		if (!player.assvar.isPlaying) return;
+		if (interval.timer) {
+			clearInterval(interval.timer);
+			interval.timer = 0;
+		}if (!player.assvar.isPlaying) return;
 		if (t >= timepoint) {
 			for (var i = timepoint; i <= t; i += 10) {
 				if (timeline[i]) danmufuns.fire(i);
 			}
 		}
-		timepoint = t + 10;
-		var i = 0;
-		if (interval.timer) {
-			clearInterval(interval.timer);
-			interval.timer = 0;
+		else{
+			return;
 		}
+		timepoint = t + 10;
 		interval.timer = setInterval(function() {
 			if (timeline[timepoint]) {
 				danmufuns.fire(timepoint);
 			}
 			timepoint += 10;
-			if (i == 25 || player.video.paused) {
+			if (i == 25|| player.video.paused) {
 				clearInterval(interval.timer);
 			}
-			i++;
 		},
-		10);
+		10*player.video.playbackRate);
 	}
 	function newstat(stat) {
 		if (typeof stat == "string") {
@@ -746,9 +749,8 @@ function initPlayer(_in_videoid) {
 				date.month = date.getMonth() + 1;
 				date.month = (date.month < 10) ? "0" + date.month: date.month;
 				danmuobj.d = date.getFullYear() + "-" + date.month + "-" + date.day;
-				danmufuns.initnewDanmuObj(danmuobj);
+				
 				danmufuns.createCommonDanmu(danmuobj, danmufuns.getTunnel(danmuobj.ty, danmuobj.s));
-
 				autocmd("adddanmu", (videoid), type, player.danmuinput.value, time, color || "NULL", danmuStyle.fontsize,
 				function(response) {
 					if (Number(response) >= 0) {
@@ -756,6 +758,7 @@ function initPlayer(_in_videoid) {
 						player.danmuinput.value = "";
 						player.sendcover.style.display = "none";
 						danmufuns.refreshnumber();
+						danmufuns.initnewDanmuObj(danmuobj);
 					} else {
 						console.log(response);
 						player.sendcover.style.display = "none";

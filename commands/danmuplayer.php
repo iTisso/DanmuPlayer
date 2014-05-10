@@ -99,6 +99,7 @@ function optioneles(){
                     <div id="stat">Д</div>
                     <div id="range">
                         <div></div>
+                        <!-- <div style="height:100%;width:100%;position:absolute;background-color:transparent !important;"></div> -->
                     </div>
                     <span>100</span>
                 </div>
