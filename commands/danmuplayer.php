@@ -39,6 +39,12 @@ function optioneles(){
                      <h3> 效果</h3>
                       <span>弹幕实时渲染:<div switch name="RealtimeVary"></div></span>
                  </div>
+                  <div>
+                     <h3> 高级弹幕</h3>
+                      <span>变速调试:<div range name="PlaySpeed" min=0.2 max=1.5></div></span>
+                      <span>2D高级弹幕:<div switch name="TwoDCodeDanmu"></div></span>
+                       <span>3D高级弹幕:<div switch name="ThreeDCodeDanmu"></div></span>
+                 </div>
                  <div>
                       <h3>开发</h3>
                       <span>弹幕层Debug:<div switch name="Debug"></div></span>
