@@ -657,6 +657,12 @@ function initPlayer(_in_videoid) {
 		return Math.floor(player.video.currentTime * 100) * 10;
 	}
 	danmufuns = {
+		showContextMenu:function(danmuobj){
+
+		},
+		hideContextMenu:function(){
+			
+		},
 		createCommonDanmu: function(danmuobj, tunnelobj) {
 			//if (!interval.movedanmu) return;
 			if(danmuobj.hasfirstshowed===0){

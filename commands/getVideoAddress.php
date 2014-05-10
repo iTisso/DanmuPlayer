@@ -20,7 +20,7 @@ if (isID($option[0])) {
             $addresses=explode(";",$address);
  		$json = '{url:[';
  		for($i=0;$i<count($addresses);$i++){
- 			$json.='"'.$addresses[$i].'"';
+ 			$json.='"'.translateAddress($addresses[$i]).'"';
  			if($i!=count($addresses)-1){
  				$json.=",";
  			}
