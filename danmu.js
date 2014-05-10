@@ -334,7 +334,7 @@ function initPlayer(_in_videoid) {
 		top: []
 
 	},
-	moverInterval = 1000 / 61,
+	//moverInterval = 1000 / 61,
 	moveTime = 5000,
 	tunnelheight = 0,
 	onshowdanmulist = [],
@@ -485,6 +485,9 @@ function initPlayer(_in_videoid) {
 					var mime = guessmime(videosrc[i]);
 					if (mime) {
 						s.type = mime;
+						/*var ifsupport=player.video.canPlayType(mime);
+						if(ifsupport=="maybe"){newstat("可能不支持此视频");}
+						else if(ifsupport==""){newstat("浏览器不支持此视频");}*/
 					}
 					player.video.appendChild(s);
 					console.log("指定视频地址:" + videosrc[i]);
@@ -960,7 +963,7 @@ function initPlayer(_in_videoid) {
 		},
 		fire: function(t) {
 			//console.log("FirePoint:" + t + " VideoTime:" + getVideoMillionSec());
-			if (danmuarray[t]) {
+			if (player.assvar.isPlaying&&danmuarray[t]) {
 				var sendsanmus = [];
 				for (var i = 0; i < danmuarray[t].length; i++) {
 					var tmpd = danmuarray[t][i];
@@ -1651,7 +1654,10 @@ function initPlayer(_in_videoid) {
 		aEL(video, "timeupdate",
 		function() {
 			//console.log("事件:播放时间改变  "+video.currentTime);
-			//player.assvar.isPlaying=true;
+			if(!player.video.paused){
+				player.assvar.isPlaying=true;
+			}
+			
 			controlfuns.refreshprogresscanvas();
 			controlfuns.refreshtime();
 			newTimePiece(getVideoMillionSec());
