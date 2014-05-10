@@ -659,6 +659,12 @@ function initPlayer(_in_videoid) {
 	danmufuns = {
 		createCommonDanmu: function(danmuobj, tunnelobj) {
 			//if (!interval.movedanmu) return;
+			if(danmuobj.hasfirstshowed===0){
+				danmuobj.hasfirstshowed=1;
+			}else if(danmuobj.hasfirstshowed==1){
+				danmuobj.hasfirstshowed=null;
+				return;
+			}
 			var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
 			var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
 			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s + "px", {
@@ -708,6 +714,9 @@ function initPlayer(_in_videoid) {
 					});
 					break;
 				}
+				default:{
+					return;
+				}
 			}
 			if (danmuobj.sended) {
 				TextDanmu.afterdrawfun = function(ct) {
@@ -717,6 +726,7 @@ function initPlayer(_in_videoid) {
 					ct.stroke();
 				}
 			}
+			
 			danmucontainer.addChild(TextDanmu);
 		},
 		send: function() {
@@ -744,12 +754,13 @@ function initPlayer(_in_videoid) {
 				danmuobj.s = danmuStyle.fontsize;
 				danmuobj.ty = type;
 				danmuobj.sended = true;
+				danmuobj.hasfirstshowed=0;
 				var date = new Date();
 				date.day = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate();
 				date.month = date.getMonth() + 1;
 				date.month = (date.month < 10) ? "0" + date.month: date.month;
 				danmuobj.d = date.getFullYear() + "-" + date.month + "-" + date.day;
-				
+				danmufuns.initnewDanmuObj(danmuobj);
 				danmufuns.createCommonDanmu(danmuobj, danmufuns.getTunnel(danmuobj.ty, danmuobj.s));
 				autocmd("adddanmu", (videoid), type, player.danmuinput.value, time, color || "NULL", danmuStyle.fontsize,
 				function(response) {
@@ -758,7 +769,7 @@ function initPlayer(_in_videoid) {
 						player.danmuinput.value = "";
 						player.sendcover.style.display = "none";
 						danmufuns.refreshnumber();
-						danmufuns.initnewDanmuObj(danmuobj);
+						
 					} else {
 						console.log(response);
 						player.sendcover.style.display = "none";
