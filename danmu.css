@@ -657,6 +657,7 @@ margin: 2px 8px;
 display: block;
 padding-left: 3px;
 position: relative;
+margin: 5px 15px;
 }
 .playermainbody #sidebar #ctrlpannel .ctrlbutton{
 position: absolute;
@@ -703,4 +704,32 @@ overflow: hidden;;
 	}
 .tabpage .switch_right{
 		height:100%;width:55px;position:absolute;left:100%;
+	}
+.tabpage div[type="range"]{
+		cursor: pointer;
+position: relative!important;
+top: 0px;
+width: 94%;
+height: 20px;
+	}
+.tabpage div[type="range"] .rangePoint{
+		position: absolute !important;
+top: 0px;
+width: 2px;
+height: 100%;
+background-color: #66ccff;
+	}
+	.tabpage div[type="range"] .rangebg{
+		position: absolute !important;
+top: calc(100% / 2 - 1px);
+width: 100%;
+height: 3px;
+background-color: #CCC;
+	}
+	.tabpage div[type="range"] .rangeCover{
+		position: absolute !important;
+top:0px;
+left:0px;
+height:100%;
+width: 100%;
 	}

@@ -196,11 +196,82 @@ function createswitch(in_name, in_bool, in_colorleft, in_colorright, out_object)
 			e.event.on();
 		}
 	}
-	e.style.position = "relative";
+	if(!e.style.position)e.style.position = "relative";
 	/*e.style.width = "70px";
 	e.style.height = "20px";*/
 	//e.style.overflow = "hidden";
 	e.innerHTML = '<div class="switch_center" style="left:' + (e.event.bool ? "55px": "0px") + '""><div class="switch_left" style="background-color:' + in_colorleft + '"></div><div class="switch_right" style="background-color:' + in_colorright + '"></div></div>';
+	if (!out_object) {
+		return e;
+	}
+}
+function createRange(in_name, min,max ,value, out_object){
+	if (out_object) {
+		var e = out_object;
+	} else {
+		var e = c_ele("div");
+	}
+	if (in_name) {
+		e.name = in_name;
+	}
+	e.setAttribute("type", "range");
+	var bg=c_ele("div");e.appendChild(bg);
+	e.appendChild(e.point=c_ele("div"));
+	e.appendChild(e.cover=c_ele("div"));
+	e.point.className="rangePoint";
+	e.cover.className="rangeCover";
+	bg.className="rangebg";
+	e.min=(min||min===0)?min:0;
+	e.max=(max||max===0)?max:1;
+	e.title=e.value=((value||value===0)?value:(max+min)/2);
+	e.point.style.left=(e.value-e.min)/(e.max-e.min)*251+"px";
+	e.default=e.value;
+	e.onmousedown=function(e){
+		e.preventDefault();
+		if(e.button===0){
+			this.ranging=true;
+			var x=e.offsetX||e.layerX
+			this.point.style.left=x+"px";
+			var va=this.min+(x/this.offsetWidth)*(this.max-this.min);
+			//this.title=Math.round((this.value=va)*100)/100;
+			this.sendValue(this.name,va);
+		}else if(e.button==2){
+			var x=this.offsetWidth*(this.default-this.min)/(this.max-this.min);
+			this.point.style.left=x+"px";
+			this.sendValue(this.name,this.default);
+		}
+		
+	}
+	e.oncontextmenu=function(e){
+		e.preventDefault();
+	}
+	e.onmousemove=function(e){e.preventDefault();
+		var x=e.offsetX||e.layerX;
+		if(this.ranging){
+			
+			this.point.style.left=x+"px";
+			var va=this.min+(x/this.offsetWidth)*(this.max-this.min);
+			//this.title=Math.round((this.value=va)*100)/100;
+			this.sendValue(this.name,va);
+		}
+		this.title=Math.round((this.min+(x/this.offsetWidth)*(this.max-this.min))*1000)/1000;
+	}
+	e.onmouseleave=function(){
+		this.ranging=false;
+	}
+	e.onmouseup=function(){
+		this.ranging=false;
+	}
+	/*e.ondrag=function(e){
+		e.preventDefault();
+		var x=e.layerX||e.x||offsetX;
+			this.point.style.left=x+"px";
+			var va=this.min+(x/this.offsetWidth)*(this.max-this.min);
+			this.title=Math.round((this.value=va)*100)/100;
+			this.sendValue(this.name,va);
+	}*/
+	e.sendValue=function(){};
+	if(!e.style.position)e.style.position = "relative";
 	if (!out_object) {
 		return e;
 	}
@@ -263,7 +334,7 @@ function initPlayer(_in_videoid) {
 		top: []
 
 	},
-	moverInterval = 1000 / 61,
+	//moverInterval = 1000 / 61,
 	moveTime = 5000,
 	tunnelheight = 0,
 	onshowdanmulist = [],
@@ -353,13 +424,22 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	function setPlayOption() {
-
 		player.o.recycle = false;
+		//player.o.playspeed = 1;
 
+	}
+	function setDefaultOption(){
+		if(getOption("DefaultSetted")!="true"){
+			setOption("TwoDCodeDanmu","true");
+			setOption("ThreeDCodeDanmu","true");
+			setOption("PlaySpeed","1");
+			setOption("DefaultSetted","true");
+		}
 	}
 	function loadoption() {
 		//console.log("加载设置");
 		newstat("加载设置");
+		setDefaultOption();
 		player.o = {},
 		player.assvar = {},
 		player.switchs = {};
@@ -405,6 +485,9 @@ function initPlayer(_in_videoid) {
 					var mime = guessmime(videosrc[i]);
 					if (mime) {
 						s.type = mime;
+						/*var ifsupport=player.video.canPlayType(mime);
+						if(ifsupport=="maybe"){newstat("可能不支持此视频");}
+						else if(ifsupport==""){newstat("浏览器不支持此视频");}*/
 					}
 					player.video.appendChild(s);
 					console.log("指定视频地址:" + videosrc[i]);
@@ -421,6 +504,12 @@ function initPlayer(_in_videoid) {
 		danmudiv.type = obj.ty;
 		var time = getMin_Sec_By_Million(obj.t);
 		danmudiv.innerHTML = '<span class="danmutime">' + (time.min < 10 ? "0" + time.min: time.min) + ":" + (time.sec < 10 ? "0" + time.sec: time.sec) + '</span> <span class="danmucontent" title="' + obj.c + '">' + obj.c + '</span> <span class="danmudate">' + obj.d + '</span>';
+		if(obj.ty==4){//高级弹幕
+			danmudiv.style.backgroundColor="#CCC";
+		}
+		if(obj.ty==5){//字幕
+			danmudiv.style.backgroundColor="green";
+		}
 		player.danmucontantor.appendChild(danmudiv);
 	}
 	function listdanmu(danmuobj) {
@@ -519,30 +608,48 @@ function initPlayer(_in_videoid) {
 			player.switchs[name] = sw;
 		}
 	}
+	function initRange(){
+		var ranges = d_selectall(player.optionpannel, "div[range]");
+		player.ranges={};
+		for (var i = 0; i < ranges.length; i++) {
+			var rg = ranges[i];
+			var name = rg.getAttribute("name");
+			var min=Number(rg.getAttribute("min"));
+			var max=Number(rg.getAttribute("max"));
+			var value=Number(getOption(name));
+			createRange(name, min, max, value, rg);
+			rg.sendValue=function(name,value){
+				if(rangeCenter[name]){
+					rangeCenter[name](value);
+				}
+			}
+			player.ranges[name] = rg;
+		}
+	}
 	function newTimePiece(t) {
-		if (!player.assvar.isPlaying) return;
+		if (interval.timer) {
+			clearInterval(interval.timer);
+			interval.timer = 0;
+		}if (!player.assvar.isPlaying) return;
 		if (t >= timepoint) {
 			for (var i = timepoint; i <= t; i += 10) {
 				if (timeline[i]) danmufuns.fire(i);
 			}
 		}
-		timepoint = t + 10;
-		var i = 0;
-		if (interval.timer) {
-			clearInterval(interval.timer);
-			interval.timer = 0;
+		else{
+			return;
 		}
+		timepoint = t + 10;
 		interval.timer = setInterval(function() {
 			if (timeline[timepoint]) {
 				danmufuns.fire(timepoint);
 			}
 			timepoint += 10;
-			if (i == 25 || player.video.paused) {
+			if (i == 25|| player.video.paused) {
 				clearInterval(interval.timer);
 			}
-			i++;
 		},
-		10);
+		10*player.video.playbackRate);
 	}
 	function newstat(stat) {
 		if (typeof stat == "string") {
@@ -553,8 +660,20 @@ function initPlayer(_in_videoid) {
 		return Math.floor(player.video.currentTime * 100) * 10;
 	}
 	danmufuns = {
+		showContextMenu:function(danmuobj){
+
+		},
+		hideContextMenu:function(){
+			
+		},
 		createCommonDanmu: function(danmuobj, tunnelobj) {
 			//if (!interval.movedanmu) return;
+			if(danmuobj.hasfirstshowed===0){
+				danmuobj.hasfirstshowed=1;
+			}else if(danmuobj.hasfirstshowed==1){
+				danmuobj.hasfirstshowed=null;
+				return;
+			}
 			var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
 			var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
 			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s + "px", {
@@ -604,15 +723,19 @@ function initPlayer(_in_videoid) {
 					});
 					break;
 				}
+				default:{
+					return;
+				}
 			}
 			if (danmuobj.sended) {
 				TextDanmu.afterdrawfun = function(ct) {
 					ct.strokeStyle = "#66ccff";
-					ct.moveTo(0, TextDanmu.height);
-					ct.lineTo(TextDanmu.width, TextDanmu.height);
+					ct.moveTo(0, TextDanmu.height-5);
+					ct.lineTo(TextDanmu.width, TextDanmu.height-5);
 					ct.stroke();
 				}
 			}
+			
 			danmucontainer.addChild(TextDanmu);
 		},
 		send: function() {
@@ -640,6 +763,7 @@ function initPlayer(_in_videoid) {
 				danmuobj.s = danmuStyle.fontsize;
 				danmuobj.ty = type;
 				danmuobj.sended = true;
+				danmuobj.hasfirstshowed=0;
 				var date = new Date();
 				date.day = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate();
 				date.month = date.getMonth() + 1;
@@ -647,7 +771,6 @@ function initPlayer(_in_videoid) {
 				danmuobj.d = date.getFullYear() + "-" + date.month + "-" + date.day;
 				danmufuns.initnewDanmuObj(danmuobj);
 				danmufuns.createCommonDanmu(danmuobj, danmufuns.getTunnel(danmuobj.ty, danmuobj.s));
-
 				autocmd("adddanmu", (videoid), type, player.danmuinput.value, time, color || "NULL", danmuStyle.fontsize,
 				function(response) {
 					if (Number(response) >= 0) {
@@ -655,6 +778,7 @@ function initPlayer(_in_videoid) {
 						player.danmuinput.value = "";
 						player.sendcover.style.display = "none";
 						danmufuns.refreshnumber();
+						
 					} else {
 						console.log(response);
 						player.sendcover.style.display = "none";
@@ -839,7 +963,7 @@ function initPlayer(_in_videoid) {
 		},
 		fire: function(t) {
 			//console.log("FirePoint:" + t + " VideoTime:" + getVideoMillionSec());
-			if (danmuarray[t]) {
+			if (player.assvar.isPlaying&&danmuarray[t]) {
 				var sendsanmus = [];
 				for (var i = 0; i < danmuarray[t].length; i++) {
 					var tmpd = danmuarray[t][i];
@@ -1050,6 +1174,28 @@ function initPlayer(_in_videoid) {
 			off: function() {
 				setOption("DefaultHideSideBar", "false");
 			}
+		},
+		TwoDCodeDanmu: {
+			on: function() {
+				setOption("TwoDCodeDanmu", "true");
+			},
+			off: function() {
+				setOption("TwoDCodeDanmu", "false");
+			}
+		},
+		ThreeDCodeDanmu: {
+			on: function() {
+				setOption("ThreeDCodeDanmu", "true");
+			},
+			off: function() {
+				setOption("ThreeDCodeDanmu", "false");
+			}
+		}
+	};
+	rangeCenter={
+		PlaySpeed:function(value){
+			if(value>0)
+			player.video.playbackRate=value;
 		}
 	};
 
@@ -1508,7 +1654,10 @@ function initPlayer(_in_videoid) {
 		aEL(video, "timeupdate",
 		function() {
 			//console.log("事件:播放时间改变  "+video.currentTime);
-			//player.assvar.isPlaying=true;
+			if(!player.video.paused){
+				player.assvar.isPlaying=true;
+			}
+			
 			controlfuns.refreshprogresscanvas();
 			controlfuns.refreshtime();
 			newTimePiece(getVideoMillionSec());
@@ -1532,6 +1681,7 @@ function initPlayer(_in_videoid) {
 	loadoption();
 	setPlayOption();
 	initSwitch();
+	initRange();
 	initevents();
 	loadvideo();
 	loaddanmu();
@@ -1548,6 +1698,7 @@ window.onload = function() {
 
 	/*var inte=COL.tools.Linear.go(0,1000,5000,function(p){r.rotate=p;console.log(inte.c)
 		if(inte.c==inte.totlac-10){COL.tools.Linear.setProcess(inte,0);}},60);*/
+	
 }
 
 /*
