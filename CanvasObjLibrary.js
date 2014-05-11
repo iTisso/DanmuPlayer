@@ -59,8 +59,7 @@ function newC_GUI() {
 			centerclick: false,
 			rightcilck: false,
 			onmoveele: null,
-			drag: false,
-			havemousepositioned: false
+			drag: false
 		},
 		event: function() {
 			this.stopPropagation = function() {
@@ -558,9 +557,6 @@ function newC_GUI() {
 				}
 			}
 			t.prepareText = function() {
-				/*if(!t.realtimeVary){
-					
-				}*/
 				if (!t.imageobj) {
 					t.imageobj = document.createElement("canvas");
 					}var ct = t.imageobj.getContext("2d");
@@ -850,6 +846,7 @@ function newC_GUI() {
 				var eve = new C_GUI.event();
 				eve.target = C_GUI.onoverElement;
 				C_GUI.onoverElement.mouseout(eve);
+				C_GUI.tosign.click=C_GUI.tosign.centerclick=C_GUI.tosign.rightcilck=false;
 			}
 			C_GUI.onoverElement = C_GUI.newonoverElement;
 			if (C_GUI.onoverElement && C_GUI.onoverElement.mouseover) {

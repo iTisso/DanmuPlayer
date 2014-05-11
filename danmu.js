@@ -660,11 +660,63 @@ function initPlayer(_in_videoid) {
 		return Math.floor(player.video.currentTime * 100) * 10;
 	}
 	danmufuns = {
-		showContextMenu:function(danmuobj){
+		initContextMenu:function(){
+			player.ContextMenu=Glib.getGraphObj("rect",{backgroundColor:"rgba(255,255,255,0.8)",borderWidth:0.2,borderColor:"rgba(211, 188, 188, 0.91)",width:100,height:70,x:0,y:0,display:false});
+			player.ContextMenu.zindex(20);
+			player.ContextMenu.content=COL.Graph.NewTextObj("somethig","16px",{autoSize:false,width:100,height:20,x:0,y:0,overflow:"hidden",color:"rgb(44, 123, 138)"});
 
+			player.ContextMenu.plusone=COL.Graph.NewTextObj("         +1","16px",{autoSize:false,width:100,height:20,x:0,y:21,overflow:"hidden"});
+
+			player.ContextMenu.copy=COL.Graph.NewTextObj("       复制","16px",{autoSize:false,width:100,height:20,x:0,y:41,overflow:"hidden"});
+
+			COL.Graph.Eventable(player.ContextMenu);
+			COL.Graph.Eventable(player.ContextMenu.copy);
+			COL.Graph.Eventable(player.ContextMenu.plusone);
+
+			player.ContextMenu.addChild(player.ContextMenu.content);
+			player.ContextMenu.addChild(player.ContextMenu.plusone);
+			player.ContextMenu.addChild(player.ContextMenu.copy);
+			COL.document.addChild(player.ContextMenu);
+
+			player.ContextMenu.addEvent("onmouseover",
+		function(e) {
+			e.stopPropagation();
+			if (e.target != player.ContextMenu) {
+				e.target.backgroundColor="#66ccff";
+			}
+		});
+			player.ContextMenu.addEvent("onmouseout",
+		function(e) {
+			e.stopPropagation();
+			if (e.target != player.ContextMenu) {
+				e.target.backgroundColor=null;
+			}
+		});
+			player.ContextMenu.addEvent("onclick",
+		function(e) {
+			e.stopPropagation();
+			if (e.target ==player.ContextMenu.plusone) {
+				danmufuns.send(player.ContextMenu.danmuobj.c);
+				danmufuns.hideContextMenu();
+			}else if(e.target ==player.ContextMenu.copy){
+				//复制内容到剪贴板
+				//window.clipboardData.setData("text/plain",player.ContextMenu.danmuobj.c);
+				danmufuns.hideContextMenu();
+			}
+		});
+		},
+		showContextMenu:function(textobj,danmuobj){
+			player.ContextMenu.display=true;
+			player.ContextMenu.danmuobj=danmuobj;
+			player.ContextMenu.content.setText(danmuobj.c);
+			var x=COL.mouseX,y=COL.mouseY;
+			if(x>width-player.ContextMenu.width)x=width-player.ContextMenu.width;
+			if(y>tunnelheight-player.ContextMenu.height)y=tunnelheight-player.ContextMenu.height;
+			player.ContextMenu.x=x;
+			player.ContextMenu.y=y;
 		},
 		hideContextMenu:function(){
-			
+			player.ContextMenu.display=false;
 		},
 		createCommonDanmu: function(danmuobj, tunnelobj) {
 			//if (!interval.movedanmu) return;
@@ -730,22 +782,46 @@ function initPlayer(_in_videoid) {
 			if (danmuobj.sended) {
 				TextDanmu.afterdrawfun = function(ct) {
 					ct.strokeStyle = "#66ccff";
-					ct.moveTo(0, TextDanmu.height-5);
-					ct.lineTo(TextDanmu.width, TextDanmu.height-5);
+					ct.moveTo(0, TextDanmu.height-7);
+					ct.lineTo(TextDanmu.width, TextDanmu.height-7);
 					ct.stroke();
 				}
 			}
-			
+			TextDanmu.danmuobj=danmuobj;
+			COL.Graph.Eventable(TextDanmu);
+			TextDanmu.addEvent("onmousedown",function(e){
+				switch(e.button){
+					case 0:{
+						if (player.video.paused) {
+					danmufuns.start();
+					player.video.play();
+				} else {
+					player.video.pause();
+				}
+						break;
+					}
+					case 2:{
+						//player.video.pause();
+						danmufuns.showContextMenu(TextDanmu,danmuobj);
+					}
+				}
+			});
 			danmucontainer.addChild(TextDanmu);
 		},
-		send: function() {
-			if (_string_.removesidespace(player.danmuinput.value) != "") {
-				console.log("发送弹幕:" + player.danmuinput.value);
-				player.sendcover.style.display = "block";
+		send: function(content) {var c=content?content:player.danmuinput.value;
+			if (_string_.removesidespace(c) != "") {
+				//console.log("发送弹幕:" + player.danmuinput.value);
+				if(!content){
+					if(player.assvar.danmusendTimeout){
+					clearTimeout(player.assvar.danmusendTimeout);
+					player.assvar.danmusendTimeout=0;
+				}player.sendcover.style.display = "block";
 				player.danmuinput.blur();
+				}
+				
 				var time = getVideoMillionSec();
 				var type;
-				console.log(danmuStyle.type);
+				//console.log(danmuStyle.type);
 				if (danmuStyle.type >= 0) {
 					type = danmuStyle.type;
 				} else {
@@ -758,7 +834,7 @@ function initPlayer(_in_videoid) {
 				var danmuobj = {};
 				danmuobj.t = time;
 				danmuobj.id = 0;
-				danmuobj.c = player.danmuinput.value;
+				danmuobj.c = c;
 				danmuobj.co = color;
 				danmuobj.s = danmuStyle.fontsize;
 				danmuobj.ty = type;
@@ -771,19 +847,31 @@ function initPlayer(_in_videoid) {
 				danmuobj.d = date.getFullYear() + "-" + date.month + "-" + date.day;
 				danmufuns.initnewDanmuObj(danmuobj);
 				danmufuns.createCommonDanmu(danmuobj, danmufuns.getTunnel(danmuobj.ty, danmuobj.s));
-				autocmd("adddanmu", (videoid), type, player.danmuinput.value, time, color || "NULL", danmuStyle.fontsize,
-				function(response) {
+				autocmd("adddanmu", (videoid), type, c, time, color || "NULL", danmuStyle.fontsize,
+					function(response) {
 					if (Number(response) >= 0) {
 						danmuobj.id = Number(response);
-						player.danmuinput.value = "";
+						if(!content){
+							player.danmuinput.value = "";
 						player.sendcover.style.display = "none";
+						}
+						
 						danmufuns.refreshnumber();
 						
 					} else {
 						console.log(response);
+						if(!content)
 						player.sendcover.style.display = "none";
 					}
 				});
+				if(!content){
+					player.assvar.danmusendTimeout=setTimeout(function(){
+					if(player.sendcover.style.display!= "none"){
+						player.sendcover.style.display="none";
+					}
+				},10000);
+				}
+				
 			}
 		},
 		show: function() {
@@ -891,7 +979,7 @@ function initPlayer(_in_videoid) {
 		},
 		initFirer: function() {
 			danmufuns.setDanmuArray();
-
+			danmufuns.initContextMenu();
 			/*danmufirer.addEventListener('message',
 			function(e) {
 				console.log(e.data);
@@ -1203,6 +1291,7 @@ function initPlayer(_in_videoid) {
 		var video = player.video;
 		COL.document.addEvent("onclick",
 		function(e) {
+			danmufuns.hideContextMenu();
 			if (e.target == COL.document) {
 				if (video.paused) {
 					danmufuns.start();

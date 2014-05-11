@@ -18,7 +18,6 @@ Glib.Graph['star']=function(optionjson){
 				g[op]=optionjson[op];
 			}
 		}
-	
 	g.r=g.r||10;
 	g.width=2*g.r;
 	g.height=2*g.r;
