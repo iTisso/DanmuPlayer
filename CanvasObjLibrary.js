@@ -536,6 +536,7 @@ function newC_GUI() {
 			}
 			t.vary=function(ct){
 				ct.translate(0, this.imageobj.height / 2);
+				ct.beginPath();
 				ct.textBaseline = this.baseline;
 				ct.lineWidth = this.textborderWidth;
 				ct.strokeStyle = this.textborderColor;
