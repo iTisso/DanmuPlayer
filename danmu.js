@@ -758,7 +758,7 @@ function initPlayer(_in_videoid) {
 		hideContextMenu: function() {
 			player.ContextMenu.display = false;
 		},
-		createCommonDanmu: function(danmuobj, tunnelobj) {
+		createCommonDanmu: function(danmuobj) {
 			//if (!interval.movedanmu) return;
 			if (danmuobj.hasfirstshowed === 0) {
 				danmuobj.hasfirstshowed = 1;
@@ -777,14 +777,14 @@ function initPlayer(_in_videoid) {
 				fontWeight: 600,
 				realtimeVary: player.o.RealtimeVary
 			});
-			TextDanmu.tunnelobj = tunnelobj;
+			TextDanmu.tunnelobj =danmufuns.getTunnel(danmuobj.ty,TextDanmu.height);
 			switch (danmuobj.ty) {
 			case 0:
 				{
 					TextDanmu.set({
 						x:
 						width,
-						y: tunnelobj[2]
+						y: TextDanmu.tunnelobj[2]
 					});
 					break;
 				}
@@ -793,7 +793,7 @@ function initPlayer(_in_videoid) {
 					TextDanmu.set({
 						x:
 						-TextDanmu.width,
-						y: tunnelobj[2]
+						y: TextDanmu.tunnelobj[2]
 					});
 					break;
 				}
@@ -802,7 +802,7 @@ function initPlayer(_in_videoid) {
 					TextDanmu.setPositionPoint(TextDanmu.width / 2, TextDanmu.height);
 					TextDanmu.set({
 						x: width / 2,
-						y: tunnelheight - tunnelobj[2]
+						y: tunnelheight - TextDanmu.tunnelobj[2]
 					});
 					break;
 				}
@@ -811,7 +811,7 @@ function initPlayer(_in_videoid) {
 					TextDanmu.setPositionPoint(TextDanmu.width / 2, 0);
 					TextDanmu.set({
 						x: width / 2,
-						y: tunnelobj[2]
+						y: TextDanmu.tunnelobj[2]
 					});
 					break;
 				}
@@ -1100,7 +1100,7 @@ function initPlayer(_in_videoid) {
 				for (var i = 0; i < danmuarray[t].length; i++) {
 					var tmpd = danmuarray[t][i];
 					if (tmpd.ty <= 3) {
-						danmufuns.createCommonDanmu(tmpd, danmufuns.getTunnel(tmpd.ty, tmpd.s));
+						danmufuns.createCommonDanmu(tmpd/*, danmufuns.getTunnel(tmpd.ty, tmpd.s)*/);
 					} else if (danmuarray[t][i].type == 4) {
 
 }
