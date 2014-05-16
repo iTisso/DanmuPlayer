@@ -548,8 +548,10 @@ function initPlayer(_in_videoid) {
 				for (var i = 0; i < danmuarr.length; i++) {
 					try {
 						danmuarr[i] = eval("(" + danmuarr[i] + ")");
+						//danmuarr[i].c=danmuarr[i].c.replace(/\n/m,"\n");
 					} catch(e) {
 						newstat("弹幕错误");
+						//console.log(e)
 					}
 				}
 				danmulist = danmuarr;
@@ -636,7 +638,7 @@ function initPlayer(_in_videoid) {
 			clearInterval(interval.timer);
 			interval.timer = 0;
 		}
-		if (!player.assvar.isPlaying) return;
+		if (!player.assvar.isPlaying||player.video.paused) return;
 		if (t >= timepoint) {
 			for (var i = timepoint; i <= t; i += 10) {
 				if (timeline[i]) danmufuns.fire(i);
@@ -646,6 +648,7 @@ function initPlayer(_in_videoid) {
 		}
 		timepoint = t + 10;
 		interval.timer = setInterval(function() {
+			if (!player.assvar.isPlaying||player.video.paused) return;
 			if (timeline[timepoint]) {
 				danmufuns.fire(timepoint);
 			}
@@ -677,7 +680,7 @@ function initPlayer(_in_videoid) {
 				display: false
 			});
 			player.ContextMenu.zindex(20);
-			player.ContextMenu.content = COL.Graph.NewTextObj("somethig", "16px", {
+			player.ContextMenu.content = COL.Graph.NewTextObj("somethig", 16, {
 				autoSize: false,
 				width: 100,
 				height: 20,
@@ -687,7 +690,7 @@ function initPlayer(_in_videoid) {
 				color: "rgb(44, 123, 138)"
 			});
 
-			player.ContextMenu.plusone = COL.Graph.NewTextObj("         +1", "16px", {
+			player.ContextMenu.plusone = COL.Graph.NewTextObj("         +1", 16, {
 				autoSize: false,
 				width: 100,
 				height: 20,
@@ -696,7 +699,7 @@ function initPlayer(_in_videoid) {
 				overflow: "hidden"
 			});
 
-			player.ContextMenu.copy = COL.Graph.NewTextObj("       复制", "16px", {
+			player.ContextMenu.copy = COL.Graph.NewTextObj("       复制",16, {
 				autoSize: false,
 				width: 100,
 				height: 20,
@@ -765,7 +768,7 @@ function initPlayer(_in_videoid) {
 			}
 			var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
 			var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
-			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s + "px", {
+			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s , {
 				color: color,
 				textborderColor: bordercolor,
 				textborderWidth: 0.6,
@@ -818,12 +821,8 @@ function initPlayer(_in_videoid) {
 				}
 			}
 			if (danmuobj.sended) {
-				TextDanmu.afterdrawfun = function(ct) {
-					ct.strokeStyle = "#66ccff";
-					ct.moveTo(0, TextDanmu.height - 7);
-					ct.lineTo(TextDanmu.width, TextDanmu.height - 7);
-					ct.stroke();
-				}
+				var lineset=TextDanmu.lineHeight*TextDanmu.varylist.length - 5;
+				TextDanmu.afterdrawfun =eval('function sendedline(ct) {ct.strokeStyle = "#66ccff";ct.moveTo(0,'+lineset+');ct.lineTo('+TextDanmu.width+', '+lineset+');ct.stroke();}') ;
 			}
 			TextDanmu.danmuobj = danmuobj;
 			COL.Graph.Eventable(TextDanmu);
@@ -851,6 +850,8 @@ function initPlayer(_in_videoid) {
 		},
 		send: function(content) {
 			var c = content ? content: player.danmuinput.value;
+			c=c.replace(/\\n/g,"\n");
+			console.log(c)
 			if (_string_.removesidespace(c) != "") {
 				//console.log("发送弹幕:" + player.danmuinput.value);
 				if (!content) {
@@ -980,7 +981,7 @@ function initPlayer(_in_videoid) {
 				} else if (ind == (i + size - 1)) {
 					break;
 				} else {
-					ind++
+					ind++;
 				};
 			}
 			tunnel[tun][i] = size;

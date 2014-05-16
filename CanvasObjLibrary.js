@@ -315,7 +315,7 @@ function newC_GUI() {
 		C_GUI.document = C_GUI.Graph.New();
 		C_GUI.Graph.Eventable(C_GUI.document);
 		C_GUI.document.drawtype = "image";
-		C_GUI.document.name="document";
+		C_GUI.document.name = "document";
 		C_GUI.document.width = canvas_dom.width;
 		C_GUI.document.height = canvas_dom.height;
 		C_GUI.drawlist = [C_GUI.document];
@@ -482,14 +482,14 @@ function newC_GUI() {
 						graph.parentNode = null;
 						delete this.childNode[graph.GraphID];
 						var ind = 0;
-								for(var ele in this.drawlist){
-									if(this.drawlist[ele].GraphID==graph.GraphID){
-										this.drawlist.splice(ind, 1);
-										break;
-									}
-									ind++;
-								}
-						
+						for (var ele in this.drawlist) {
+							if (this.drawlist[ele].GraphID == graph.GraphID) {
+								this.drawlist.splice(ind, 1);
+								break;
+							}
+							ind++;
+						}
+
 					}
 				}
 			};
@@ -506,14 +506,17 @@ function newC_GUI() {
 			t.drawtype = "text";
 			t.realtimeVary = false;
 			t.text = text || " ";
+			t.varylist = [];
+			t.linedirection = 0; //"0:left-right;1:up-down"
+			t.columndirection = 0; //"0:+ 1:-"
 			t.baseline = "middle";
 			t.fontStyle = null;
 			t.fontWeight = null;
 			t.textInput = null;
 			t.fontVariant = null;
-			t.lineHeight = null;
-			t.fontSize = fontsize || "15px";
+			t.lineHeight = t.fontSize = fontsize || 15;
 			t.fontFamily = null;
+			//t.overflow="hidden";
 			t.innerX = 0;
 			t.innerY = 0;
 			t.color = "#000";
@@ -534,8 +537,8 @@ function newC_GUI() {
 					t[ob] = opjson[ob];
 				}
 			}
-			t.vary=function(ct){
-				ct.translate(0, this.imageobj.height / 2);
+			t.vary = function(ct) {
+				//ct.translate(0, this.imageobj.height / 2);
 				ct.beginPath();
 				ct.textBaseline = this.baseline;
 				ct.lineWidth = this.textborderWidth;
@@ -543,53 +546,124 @@ function newC_GUI() {
 				ct.fillStyle = this.color || C_GUI.font.color || "#000";
 				//ct.save();
 				if (this.shadowBlur > 0) {
-					ct.font = font;
+					ct.font = this.font;
 					ct.shadowBlur = this.shadowBlur;
 					ct.shadowColor = this.shadowColor;
 					ct.shadowOffsetX = this.shadowOffset.x;
 					ct.shadowOffsetY = this.shadowOffset.y;
 				}
 				ct.font = this.font;
-				if (this.fill) {
-					ct.fillText(this.text, this.innerX, this.innerY);
-				}
-				if (this.textborderWidth) {
-					ct.strokeText(this.text, this.innerX, this.innerY);
+				if(this.linedirection===0){
+					ct.translate(0, this.lineHeight / 2);
+					if(t.columndirection===0){
+						for (var i = 0; i < this.varylist.length; i++) {
+							if (this.fill) {
+								ct.fillText(this.varylist[i], this.innerX, this.innerY);
+							}
+							if (this.textborderWidth) {
+								ct.strokeText(this.varylist[i], this.innerX, this.innerY);
+							}
+							ct.translate(0, this.lineHeight);
+						}
+					}else if(t.columndirection==1){
+						for (var i = this.varylist.length-1; i >0; i--) {
+							if (this.fill) {
+								ct.fillText(this.varylist[i], this.innerX, this.innerY);
+							}
+							if (this.textborderWidth) {
+								ct.strokeText(this.varylist[i], this.innerX, this.innerY);
+							}
+							ct.translate(0, this.lineHeight);
+						}
+					}
+				}else if(this.linedirection==1){
+					if(t.columndirection===0){
+						for (var i = 0; i < this.varylist.length; i++) {
+							ct.save();
+							ct.translate(i*this.lineHeight,this.fontSize/2);
+							var thisline=this.varylist[i].split("");
+							for(var im=0;im<thisline.length;im++){
+								ct.save();
+								ct.translate(this.lineHeight-ct.measureText(thisline[im]).width,0);
+								if (this.fill) {
+									ct.fillText(thisline[im], this.innerX, this.innerY);
+								}
+								if (this.textborderWidth) {
+									ct.strokeText(thisline[im], this.innerX, this.innerY);
+								}
+								ct.restore();
+								ct.translate(0, this.fontSize);
+							}
+							ct.restore();
+						}
+					}else if(t.columndirection==1){
+						for (var i =this.varylist.length-1; i>0; i--) {
+							ct.save();
+							ct.translate((this.varylist.length-1-i)*this.lineHeight,this.fontSize/2);
+							var thisline=this.varylist[i].split("");
+							for(var im=0;im<thisline.length;im++){
+								ct.save();
+								ct.translate(this.lineHeight-ct.measureText(thisline[im]).width,0);
+								if (this.fill) {
+									ct.fillText(thisline[im], this.innerX, this.innerY);
+								}
+								if (this.textborderWidth) {
+									ct.strokeText(thisline[im], this.innerX, this.innerY);
+								}
+								ct.restore();
+								ct.translate(0, this.fontSize);
+							}
+							ct.restore();
+						}
+					}
 				}
 			}
 			t.prepareText = function() {
 				if (!t.imageobj) {
 					t.imageobj = document.createElement("canvas");
-					}var ct = t.imageobj.getContext("2d");
-					ct.clearRect(0, 0, t.imageobj.width, t.imageobj.height);
-				
+				}
+				var ct = t.imageobj.getContext("2d");
+				ct.clearRect(0, 0, t.imageobj.width, t.imageobj.height);
+				t.varylist = t.text.split(/\n/g);
 				var font = "";
 				if (t.fontStyle || C_GUI.font.fontStyle) font += t.fontStyle || C_GUI.font.fontStyle;
 				if (t.fontVariant || C_GUI.font.fontVariant) font += (" " + (t.fontVariant || C_GUI.font.fontVariant));
 				if (t.fontWeight || C_GUI.font.fontWeight) font += (" " + (t.fontWeight || C_GUI.font.fontWeight));
-				font += (" " + (t.fontSize || C_GUI.font.fontSize) || "15px");
-				if (t.lineHeight || C_GUI.font.lineHeight) font += (" " + (t.lineHeight || C_GUI.font.lineHeight));
+				font += (" " + (t.fontSize || C_GUI.font.fontSize) || 15) + "px";
+				/*if (t.lineHeight || C_GUI.font.lineHeight) font += (" " + (t.lineHeight || C_GUI.font.lineHeight));*/
 				if (t.fontFamily || C_GUI.font.fontFamily) font += (" " + (t.fontFamily || C_GUI.font.fontFamily));
 				else {
 					font += (" " + C_GUI.fontFamily);
 				}
-				
+
 				t.font = font;
 				ct.font = font;
 				if (t.autoSize) {
-					var w = ct.measureText(t.text).width;
-					t.width = t.imageobj.width = (t.maxWidth >= w) ? t.maxWidth: w;
-					var fontsize = C_GUI.tools.getnum(t.fontSize) * 1.3;
-					if (fontsize === 0) {
-						fontsize = 20;
+					var w = 0,
+					tw;
+					if (this.linedirection === 0) {
+						for (var i = 0; i < t.varylist.length; i++) {
+							tw = ct.measureText(t.varylist[i]).width;
+							w = tw > w ? tw: w;
+						}
+						t.width = t.imageobj.width = (t.maxWidth >= w) ? t.maxWidth: w;
+						t.height = t.imageobj.height = t.varylist.length * t.lineHeight;
+					}else if(this.linedirection==1){
+						for (var i = 0; i < t.varylist.length; i++) {
+							tw =t.varylist[i].split("").length;
+							w = tw > w ? tw: w;
+						}
+						w*= t.fontSize;
+						t.width = t.imageobj.width = t.varylist.length * t.lineHeight;
+						t.height = t.imageobj.height =(t.maxWidth >= w) ? t.maxWidth: w ;
 					}
-					t.height = t.imageobj.height = fontsize;
+
 				} else {
 					t.imageobj.width = t.width || 100;
 					t.imageobj.height = t.height || 30;
 				}
 				t.vary(ct);
-				ct.restore();
+				//ct.restore();
 			};
 			t.setSize = function(width, height) {
 				t.autoSize = false;
@@ -686,27 +760,27 @@ function newC_GUI() {
 						break;
 					}
 				case "image":
-				{
+					{
 						ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
-							if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
+						if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
 							ct.drawImage(d[i].imageobj, 0, 0);
 						}
-						
+
 						break;
 					}
 				case "text":
 					{
 						ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
-						if(d[i].realtimeVary){
+						if (d[i].realtimeVary) {
 							ct.save();
 							d[i].vary(ct);
 							ct.restore();
-						}else{
+						} else {
 							if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
-							ct.drawImage(d[i].imageobj, 0, 0);
+								ct.drawImage(d[i].imageobj, 0, 0);
+							}
 						}
-						}
-						
+
 						break;
 					}
 				}
@@ -815,9 +889,9 @@ function newC_GUI() {
 	// var cct;
 	C_GUI.draw = function() {
 		C_GUI.newonoverElement = null;
-		var cct=C_GUI.cct;
-		if(C_GUI.Debug.stat){
-			C_GUI.Debug.itemcount=0;
+		var cct = C_GUI.cct;
+		if (C_GUI.Debug.stat) {
+			C_GUI.Debug.itemcount = 0;
 		}
 		if (C_GUI.autoClear) {
 			cct.clearRect(0, 0, C_GUI.canvas.width, C_GUI.canvas.height);
@@ -831,7 +905,7 @@ function newC_GUI() {
 			cct.textBaseline = "bottom";
 			cct.globalCompositeOperation = "lighter";
 			cct.fillStyle = "red";
-			cct.fillText("mouseX:" + C_GUI.mouseX + " Y:" + C_GUI.mouseY + " mouseL:" + C_GUI.mouseleft + " C:" + C_GUI.mousecenter + " R:" + C_GUI.mouseright + " FPS:" + C_GUI.fps.v+" Items:"+C_GUI.Debug.itemcount, 0, C_GUI.canvas.height);
+			cct.fillText("mouseX:" + C_GUI.mouseX + " Y:" + C_GUI.mouseY + " mouseL:" + C_GUI.mouseleft + " C:" + C_GUI.mousecenter + " R:" + C_GUI.mouseright + " FPS:" + C_GUI.fps.v + " Items:" + C_GUI.Debug.itemcount, 0, C_GUI.canvas.height);
 			cct.strokeStyle = "red";
 			cct.globalCompositeOperation = "source-over";
 			cct.moveTo(C_GUI.mouseX, C_GUI.mouseY + 6);
@@ -847,7 +921,7 @@ function newC_GUI() {
 				var eve = new C_GUI.event();
 				eve.target = C_GUI.onoverElement;
 				C_GUI.onoverElement.mouseout(eve);
-				C_GUI.tosign.click=C_GUI.tosign.centerclick=C_GUI.tosign.rightcilck=false;
+				C_GUI.tosign.click = C_GUI.tosign.centerclick = C_GUI.tosign.rightcilck = false;
 			}
 			C_GUI.onoverElement = C_GUI.newonoverElement;
 			if (C_GUI.onoverElement && C_GUI.onoverElement.mouseover) {
@@ -947,11 +1021,11 @@ function newC_GUI() {
 			return a.z_index - b.z_index;
 		},
 		arraybyZ_index: function(graph) { //让图形的子元素排序
-			if(graph.childNode){
-				graph.drawlist= graph.childNode.slice(0);
+			if (graph.childNode) {
+				graph.drawlist = graph.childNode.slice(0);
 				graph.drawlist.sort(C_GUI.tools.paixurule);
-				for(var i=0;graph.drawlist[i];i++){}
-					graph.drawlist.length=i;
+				for (var i = 0; graph.drawlist[i]; i++) {}
+				graph.drawlist.length = i;
 			}
 			//if (graph.childNode) graph.drawlist = graph.childNode.sort(C_GUI.tools.paixurule);
 		},
@@ -983,7 +1057,7 @@ function newC_GUI() {
 	C_GUI.Debug = {
 		stat: false,
 		eleinfo: false,
-		itemcount:0,
+		itemcount: 0,
 		on: function() {
 			if (!C_GUI.Debug.stat) {
 				C_GUI.Debug.stat = true;
