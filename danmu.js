@@ -86,6 +86,25 @@ function setOption(name, value) {
 		setCookie("playeroption:" + name, value);
 	}
 }
+/*function changeTabTo(){
+
+}*/
+function makeTabGroup(obj){//[[tab1,block1],[tab2,block2]]
+	if(!window.TabGroups)window.TabGroups=[];
+	if(obj){
+		for(var i=0;i<obj.length;i++){
+			obj[i][0].pointTo=obj[i][1];
+			obj[i][0].TabGroup=obj;
+			obj[i][0].onmousedown=function(e){
+				if(e.button!=0)return;
+				for (var inn = 0; inn < this.TabGroup.length; inn++) {
+					this.TabGroup[inn][1].style.display = "none";
+				}
+				this.pointTo.style.display = "block";
+			}
+		}
+	}
+}
 
 function getOption(name) {
 	if (localstoragesupport) {
@@ -117,7 +136,7 @@ function getCookie(c_name) {
 			return unescape(document.cookie.substring(c_start, c_end))
 		}
 	}
-	return ""
+	return false;
 }
 function setCookie(c_name, value, expiredays) {
 	var exdate = new Date();
@@ -348,12 +367,16 @@ function initPlayer(_in_videoid) {
 	danmucontainer;
 	var danmufirer, superdanmu;
 
+	var zimulist=[],
+	zimucontainer;
+
 	player.assvar = {};
 	var danmuStyle = {
 		fontsize: 30,
 		color: null,
 		type: 0
 	};
+
 	var COL, Glib, AnimationFrame;
 
 	function setdom() {
@@ -398,6 +421,8 @@ function initPlayer(_in_videoid) {
 		player.volumestat = d_select(player.mainbody, "#controler #volume #stat");
 		player.loadinfo.ctx = player.loadinfo.getContext("2d");
 
+		makeTabGroup([[player.danmulistbutton,d_select(player.sidebar,"#danmupool")],[player.superdanmubutton,d_select(player.sidebar,"#superdanmueditor")],[player.optionbutton,player.optionpannel]]);
+		makeTabGroup([[d_select(player.sidebar,"#chooseText"),d_select(player.sidebar,"#SuperTextTab")],[d_select(player.sidebar,"#chooseCode"),d_select(player.sidebar,"#SupeCodeTab")]]);
 		player.loadinfo.height = player.progress.offsetHeight;
 		COL = newC_GUI();
 		COL.font.color = "#ffffff";
@@ -408,14 +433,22 @@ function initPlayer(_in_videoid) {
 		//window.doc = COL.document;
 		initTextDanmuContainer();
 		
+		
 	}
 	function initTextDanmuContainer() {
 		/*window.ctt = */
+		/*普通弹幕层*/
 		danmucontainer = COL.Graph.New();
 		COL.Graph.Eventable(danmucontainer);
 		danmucontainer.name = "danmucontainer";
 		danmucontainer.needsort = false;
 		COL.document.addChild(danmucontainer);
+		danmucontainer.zindex(2);
+		/*字幕弹幕层*/
+		zimucontainer = COL.Graph.New();
+		danmucontainer.name = "zimucontainer";
+		COL.document.addChild(zimucontainer);
+		zimucontainer.zindex(0);
 	}
 	function changetab(tab) {
 		for (var i = 0; i < player.ctrlbuttons.length; i++) {
@@ -433,12 +466,22 @@ function initPlayer(_in_videoid) {
 		//player.o.playspeed = 1;
 	}
 	function setDefaultOption() {
-		if (getOption("DefaultSetted") != "true") {
-			setOption("TwoDCodeDanmu", "true");
-			setOption("ThreeDCodeDanmu", "true");
-			setOption("PlaySpeed", "1");
-			setOption("DefaultSetted", "true");
-			setOption("ProgressDanmumark", "false");
+		var ver="0.3.1";
+		if (getOption("DefaultSetted") != ver) {
+			var settings={
+			DefaultSetted:"true",
+			TwoDCodeDanmu:"true",
+			ThreeDCodeDanmu:"true",
+			PlaySpeed:"1",
+			ProgressDanmumark:"false"
+		}
+		for(var st in settings){
+			if(getOption(st)==false){
+				setOption(st, settings[st]);
+			}
+		}
+			setOption("DefaultSetted", ver);
+			
 		}
 	}
 	function loadoption() {
@@ -448,6 +491,7 @@ function initPlayer(_in_videoid) {
 		player.o = {},
 		player.assvar = {},
 		player.switchs = {};
+		//player.ZiMu={};
 		player.assvar.danmufeng=0;
 		player.assvar.danmumark=COL.Graph.New({drawtype:"image"});
 		player.assvar.danmumark.drawfunction=function(ct){
@@ -466,7 +510,7 @@ function initPlayer(_in_videoid) {
 					//ct.strokeStyle="rgba("+color+","+color+","+color+",1)";
 					ct.strokeStyle="rgba(125, 156, 156,"+(cutnum/player.assvar.danmufeng+0.5)+")";
 					ct.moveTo(left,0);
-					ct.lineTo(left,6);
+					ct.lineTo(left,cutnum/player.assvar.danmufeng*20+1);
 					ct.stroke();
 					ct.restore();
 				}
@@ -658,6 +702,20 @@ function initPlayer(_in_videoid) {
 				}
 			}
 			player.ranges[name] = rg;
+		}
+	}
+	function initInput() {
+		var inputs = d_selectall(player.sidebar, "input[name]");
+		player.inputs = {};
+		for (var i = 0; i < inputs.length; i++) {
+			var ipt = inputs[i];
+			var name = ipt.getAttribute("name");
+			player.inputs[name]=ipt;
+			ipt.onchange = function() {
+				if (inputCenter[name]) {
+					inputCenter[name](ipt.value);
+				}
+			}
 		}
 	}
 	function newTimePiece(t) {
@@ -1144,7 +1202,7 @@ function initPlayer(_in_videoid) {
 				}
 			}
 			timeline = tarr;
-			controlfuns.refreshDanmuMark();
+			//controlfuns.refreshDanmuMark();
 			//console.log("重置时间轴");
 		},
 		refreshnumber: function() {
@@ -1154,6 +1212,9 @@ function initPlayer(_in_videoid) {
 				player.danmucount.innerHTML = "弹幕错误";
 			}
 			player.assvar.danmumark.drawpic(player.loadinfo.width,25,player.assvar.danmumark.drawfunction);
+		},
+		zimurevolution:function(zinuobj){
+			
 		}
 
 	}
@@ -1379,7 +1440,11 @@ function initPlayer(_in_videoid) {
 			if (value > 0) player.video.playbackRate = value;
 		}
 	};
-
+	inputCenter={
+		relativeTo:function(value){
+			console.log(value);
+		}
+	};
 	function initevents() {
 		var video = player.video;
 		COL.document.addEvent("onclick",
@@ -1448,7 +1513,6 @@ function initPlayer(_in_videoid) {
 		function() {
 			fitdanmulayer();
 		});
-
 		aEL(player.danmulayer, "contextmenu",
 		function(e) {
 			e.preventDefault();
@@ -1457,7 +1521,7 @@ function initPlayer(_in_videoid) {
 		function(e) {
 			e.preventDefault();
 		});
-		aEL(player.sidebar, "mousedown",
+		/*aEL(player.sidebar, "mousedown",
 		function(e) {
 			switch (e.target.id) {
 			case "danmulistbutton":
@@ -1468,7 +1532,7 @@ function initPlayer(_in_videoid) {
 					break;
 				}
 			}
-		});
+		});*/
 		aEL(player.optionpannel, "click",
 		function(e) {
 			var ele = e.target.parentNode;
@@ -1505,6 +1569,18 @@ function initPlayer(_in_videoid) {
 				}
 			}
 		})
+		aEL(player.mainbody, "keydown",
+		function(e) {
+			switch(e.keyCode){
+				case 84:{
+					e.preventDefault();
+					if(e.altKey&&e.ctrlKey){
+						player.inputs.gettime.value=getVideoMillionSec();
+					}
+					break;
+				}
+			}
+		});
 		aEL(player.progress, "mousedown",
 		function(e) {
 			e.preventDefault();
@@ -1634,25 +1710,25 @@ function initPlayer(_in_videoid) {
 				case "fromtop":
 					{
 						danmuStyle.type = 3;
-						console.log(danmuStyle.type);
+						//console.log(danmuStyle.type);
 						break;
 					}
 				case "frombottom":
 					{
 						danmuStyle.type = 2;
-						console.log(danmuStyle.type);
+						//console.log(danmuStyle.type);
 						break;
 					}
 				case "fromright":
 					{
 						danmuStyle.type = 0;
-						console.log(danmuStyle.type);
+						//console.log(danmuStyle.type);
 						break;
 					}
 				case "fromleft":
 					{
 						danmuStyle.type = 1;
-						console.log(danmuStyle.type);
+						//console.log(danmuStyle.type);
 						break;
 					}
 				}
@@ -1845,6 +1921,7 @@ function initPlayer(_in_videoid) {
 	setPlayOption();
 	initSwitch();
 	initRange();
+	initInput();
 	initevents();
 	loadvideo();
 	loaddanmu();
@@ -1875,3 +1952,7 @@ window.onload = function() {
                                          ##           ##           ##
                                          #################
 */
+/*字幕对象结构*/
+{id:id,ty:5,c:"{主要结构}}",t:null,s:null,d:"2014-05-17"}
+
+{start:10000,end:675470,content:"我了个喵",fontSize:50,rotate:30}

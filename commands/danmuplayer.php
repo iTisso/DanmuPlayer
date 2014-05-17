@@ -3,7 +3,16 @@ $option = $options;
 if (isID($option[0])) {
 function superdanmuTab(){
 ?>
-    
+    <div id="supertabchoose"><div id="chooseText">字</div><div id="chooseCode">码</div></div>
+    <div id="commonTools" style="position: absolute;height: 26px;width: 100%;top: 0px;left: 0px;font-size: 13px;background-color: #66ccff;">
+         <input  name="gettime" style="width: 54px;text-align: right;" title="Ctrl+Alt+t" /> 
+        相对于<select onchange="inputCenter.relativeTo(this.value)">
+        <option value="frame">框架</option>
+        <option value="video">视频</option>
+        </select>
+    </div>
+    <div id="SuperTextTab" class="SuperTab">高级字幕</div>
+    <div id="SupeCodeTab" class="SuperTab">代码弹幕</div>
 <?php
 }
 function optioneles(){
