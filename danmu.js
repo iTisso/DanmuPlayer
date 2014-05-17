@@ -196,7 +196,7 @@ function createswitch(in_name, in_bool, in_colorleft, in_colorright, out_object)
 			e.event.on();
 		}
 	}
-	if(!e.style.position)e.style.position = "relative";
+	if (!e.style.position) e.style.position = "relative";
 	/*e.style.width = "70px";
 	e.style.height = "20px";*/
 	//e.style.overflow = "hidden";
@@ -205,7 +205,7 @@ function createswitch(in_name, in_bool, in_colorleft, in_colorright, out_object)
 		return e;
 	}
 }
-function createRange(in_name, min,max ,value, out_object){
+function createRange(in_name, min, max, value, out_object) {
 	if (out_object) {
 		var e = out_object;
 	} else {
@@ -215,52 +215,57 @@ function createRange(in_name, min,max ,value, out_object){
 		e.name = in_name;
 	}
 	e.setAttribute("type", "range");
-	var bg=c_ele("div");e.appendChild(bg);
-	e.appendChild(e.point=c_ele("div"));
-	e.appendChild(e.cover=c_ele("div"));
-	e.point.className="rangePoint";
-	e.cover.className="rangeCover";
-	bg.className="rangebg";
-	e.min=(min||min===0)?min:0;
-	e.max=(max||max===0)?max:1;
-	e.title=e.value=((value||value===0)?value:(max+min)/2);
-	e.point.style.left=(e.value-e.min)/(e.max-e.min)*251+"px";
-	e.default=e.value;
-	e.onmousedown=function(e){
+	var bg = c_ele("div");
+	e.appendChild(bg);
+	e.appendChild(e.point = c_ele("div"));
+	e.appendChild(e.cover = c_ele("div"));
+	e.point.className = "rangePoint";
+	e.cover.className = "rangeCover";
+	bg.className = "rangebg";
+	e.min = (min || min === 0) ? min: 0;
+	e.max = (max || max === 0) ? max: 1;
+	e.title = e.value = ((value || value === 0) ? value: (max + min) / 2);
+	e.point.style.left = (e.value - e.min) / (e.max - e.min) * 251 + "px";
+	e.
+default = e.value;
+	e.onmousedown = function(e) {
 		e.preventDefault();
-		if(e.button===0){
-			this.ranging=true;
-			var x=e.offsetX||e.layerX
-			this.point.style.left=x+"px";
-			var va=this.min+(x/this.offsetWidth)*(this.max-this.min);
+		if (e.button === 0) {
+			this.ranging = true;
+			var x = e.offsetX || e.layerX;
+			this.point.style.left = x + "px";
+			var va = this.min + (x / this.offsetWidth) * (this.max - this.min);
 			//this.title=Math.round((this.value=va)*100)/100;
-			this.sendValue(this.name,va);
-		}else if(e.button==2){
-			var x=this.offsetWidth*(this.default-this.min)/(this.max-this.min);
-			this.point.style.left=x+"px";
-			this.sendValue(this.name,this.default);
+			this.sendValue(this.name, va);
+		} else if (e.button == 2) {
+			var x = this.offsetWidth * (this.
+		default - this.min) / (this.max - this.min);
+			this.point.style.left = x + "px";
+			this.sendValue(this.name, this.
+		default);
 		}
-		
+
 	}
-	e.oncontextmenu=function(e){
+	e.oncontextmenu = function(e) {
 		e.preventDefault();
 	}
-	e.onmousemove=function(e){e.preventDefault();
-		var x=e.offsetX||e.layerX;
-		if(this.ranging){
-			
-			this.point.style.left=x+"px";
-			var va=this.min+(x/this.offsetWidth)*(this.max-this.min);
+	e.onmousemove = function(e) {
+		e.preventDefault();
+		var x = e.offsetX || e.layerX;
+		if (this.ranging) {
+
+			this.point.style.left = x + "px";
+			var va = this.min + (x / this.offsetWidth) * (this.max - this.min);
 			//this.title=Math.round((this.value=va)*100)/100;
-			this.sendValue(this.name,va);
+			this.sendValue(this.name, va);
 		}
-		this.title=Math.round((this.min+(x/this.offsetWidth)*(this.max-this.min))*1000)/1000;
+		this.title =(this.min + (x / this.offsetWidth) * (this.max - this.min)).toFixed(3);
 	}
-	e.onmouseleave=function(){
-		this.ranging=false;
+	e.onmouseleave = function() {
+		this.ranging = false;
 	}
-	e.onmouseup=function(){
-		this.ranging=false;
+	e.onmouseup = function() {
+		this.ranging = false;
 	}
 	/*e.ondrag=function(e){
 		e.preventDefault();
@@ -270,8 +275,8 @@ function createRange(in_name, min,max ,value, out_object){
 			this.title=Math.round((this.value=va)*100)/100;
 			this.sendValue(this.name,va);
 	}*/
-	e.sendValue=function(){};
-	if(!e.style.position)e.style.position = "relative";
+	e.sendValue = function() {};
+	if (!e.style.position) e.style.position = "relative";
 	if (!out_object) {
 		return e;
 	}
@@ -306,7 +311,7 @@ function isHexColor(color) {
 }
 function toHexColor(colorString) {
 	var c = colorString.match(/(\d+)/g);
-	 if (!c || c.length != 3) return false;
+	if (!c || c.length != 3) return false;
 	var cs = "";
 	for (var i = 0; i < c.length; i++) {
 		if (c[i] <= 16) cs += "0";
@@ -332,7 +337,6 @@ function initPlayer(_in_videoid) {
 		left: [],
 		bottom: [],
 		top: []
-
 	},
 	//moverInterval = 1000 / 61,
 	moveTime = 5000,
@@ -403,7 +407,7 @@ function initPlayer(_in_videoid) {
 		Glib = getGraphlib(COL);
 		//window.doc = COL.document;
 		initTextDanmuContainer();
-		fitdanmulayer();
+		
 	}
 	function initTextDanmuContainer() {
 		/*window.ctt = */
@@ -425,15 +429,16 @@ function initPlayer(_in_videoid) {
 	}
 	function setPlayOption() {
 		player.o.recycle = false;
-		//player.o.playspeed = 1;
 
+		//player.o.playspeed = 1;
 	}
-	function setDefaultOption(){
-		if(getOption("DefaultSetted")!="true"){
-			setOption("TwoDCodeDanmu","true");
-			setOption("ThreeDCodeDanmu","true");
-			setOption("PlaySpeed","1");
-			setOption("DefaultSetted","true");
+	function setDefaultOption() {
+		if (getOption("DefaultSetted") != "true") {
+			setOption("TwoDCodeDanmu", "true");
+			setOption("ThreeDCodeDanmu", "true");
+			setOption("PlaySpeed", "1");
+			setOption("DefaultSetted", "true");
+			setOption("ProgressDanmumark", "false");
 		}
 	}
 	function loadoption() {
@@ -443,6 +448,30 @@ function initPlayer(_in_videoid) {
 		player.o = {},
 		player.assvar = {},
 		player.switchs = {};
+		player.assvar.danmufeng=0;
+		player.assvar.danmumark=COL.Graph.New({drawtype:"image"});
+		player.assvar.danmumark.drawfunction=function(ct){
+			var Xw = player.loadinfo.width,
+			d = player.o.totaltime;
+			ct.clearRect(0,0,Xw,25);
+				ct.beginPath();
+				var left=0,color,cutnum;
+				for(var time in danmuarray){
+					ct.save();
+					left=time/1000/ d * Xw;
+					cutnum=danmuarray[time].length;
+					if(cutnum>player.assvar.danmufeng)player.assvar.danmufeng=cutnum;
+					//color=(cutnum/player.assvar.danmufeng*255).toFixed();
+					ct.beginPath();
+					//ct.strokeStyle="rgba("+color+","+color+","+color+",1)";
+					ct.strokeStyle="rgba(125, 156, 156,"+(cutnum/player.assvar.danmufeng+0.5)+")";
+					ct.moveTo(left,0);
+					ct.lineTo(left,6);
+					ct.stroke();
+					ct.restore();
+				}
+				//ct.stroke();
+		}
 		controlfuns.sidebar_show();
 		if (getOption("Debug") == "true") {
 			COL.Debug.on();
@@ -450,11 +479,14 @@ function initPlayer(_in_videoid) {
 		if (getOption("DefaultHideSideBar") == "true") {
 			controlfuns.sidebar_hide();
 		}
+		if(getOption("ProgressDanmumark") == "true"){
+			player.o.ProgressDanmumark=true;
+		}
 		player.o.RealtimeVary = getOption("RealtimeVary") == "true" ? true: false;
-
+		fitdanmulayer();
 	}
 	function loadvideo() {
-		console.log("加载视频");
+		//console.log("加载视频");
 		newstat("获取视频地址");
 		cmd("getVideoAddress " + videoid, false,
 		function(a) {
@@ -504,11 +536,11 @@ function initPlayer(_in_videoid) {
 		danmudiv.type = obj.ty;
 		var time = getMin_Sec_By_Million(obj.t);
 		danmudiv.innerHTML = '<span class="danmutime">' + (time.min < 10 ? "0" + time.min: time.min) + ":" + (time.sec < 10 ? "0" + time.sec: time.sec) + '</span> <span class="danmucontent" title="' + obj.c + '">' + obj.c + '</span> <span class="danmudate">' + obj.d + '</span>';
-		if(obj.ty==4){//高级弹幕
-			danmudiv.style.backgroundColor="#CCC";
+		if (obj.ty == 4) { //高级弹幕
+			danmudiv.style.backgroundColor = "#CCC";
 		}
-		if(obj.ty==5){//字幕
-			danmudiv.style.backgroundColor="green";
+		if (obj.ty == 5) { //字幕
+			danmudiv.style.backgroundColor = "green";
 		}
 		player.danmucontantor.appendChild(danmudiv);
 	}
@@ -523,8 +555,9 @@ function initPlayer(_in_videoid) {
 	}
 
 	function loaddanmu() {
-		console.log("加载弹幕");
+		//console.log("加载弹幕");
 		newstat("加载弹幕");
+		danmufuns.show();
 		cmd("getDanmu " + videoid, false,
 		function(a) {
 			if (a == "Error") {
@@ -543,17 +576,18 @@ function initPlayer(_in_videoid) {
 				for (var i = 0; i < danmuarr.length; i++) {
 					try {
 						danmuarr[i] = eval("(" + danmuarr[i] + ")");
+						//danmuarr[i].c=danmuarr[i].c.replace(/\n/m,"\n");
 					} catch(e) {
 						newstat("弹幕错误");
+						//console.log(e)
 					}
 				}
 				danmulist = danmuarr;
-				//console.log(danmuarr);
 				danmucount = danmuarr.length;
 				listdanmu();
-				danmufuns.refreshnumber();
 				danmufuns.setTimeline();
 				danmufuns.initFirer();
+				danmufuns.refreshnumber();
 				//danmuListener();
 				/*if (!danmufirer) {
 					if (window.Worker) {
@@ -565,7 +599,6 @@ function initPlayer(_in_videoid) {
 					}
 				}*/
 			}
-			danmufuns.show();
 		});
 	}
 	function setAllIntervals() {
@@ -597,6 +630,7 @@ function initPlayer(_in_videoid) {
 				});
 			}
 		}
+		controlfuns.refreshDanmuMark();
 	}
 	function initSwitch() {
 		var switchs = d_selectall(player.optionpannel, "div[switch]");
@@ -608,18 +642,18 @@ function initPlayer(_in_videoid) {
 			player.switchs[name] = sw;
 		}
 	}
-	function initRange(){
+	function initRange() {
 		var ranges = d_selectall(player.optionpannel, "div[range]");
-		player.ranges={};
+		player.ranges = {};
 		for (var i = 0; i < ranges.length; i++) {
 			var rg = ranges[i];
 			var name = rg.getAttribute("name");
-			var min=Number(rg.getAttribute("min"));
-			var max=Number(rg.getAttribute("max"));
-			var value=Number(getOption(name));
+			var min = Number(rg.getAttribute("min"));
+			var max = Number(rg.getAttribute("max"));
+			var value = Number(getOption(name));
 			createRange(name, min, max, value, rg);
-			rg.sendValue=function(name,value){
-				if(rangeCenter[name]){
+			rg.sendValue = function(name, value) {
+				if (rangeCenter[name]) {
 					rangeCenter[name](value);
 				}
 			}
@@ -630,26 +664,27 @@ function initPlayer(_in_videoid) {
 		if (interval.timer) {
 			clearInterval(interval.timer);
 			interval.timer = 0;
-		}if (!player.assvar.isPlaying) return;
+		}
+		if (!player.assvar.isPlaying||player.video.paused) return;
 		if (t >= timepoint) {
 			for (var i = timepoint; i <= t; i += 10) {
 				if (timeline[i]) danmufuns.fire(i);
 			}
-		}
-		else{
+		} else {
 			return;
 		}
 		timepoint = t + 10;
 		interval.timer = setInterval(function() {
+			if (!player.assvar.isPlaying||player.video.paused) return;
 			if (timeline[timepoint]) {
 				danmufuns.fire(timepoint);
 			}
 			timepoint += 10;
-			if (i == 25|| player.video.paused) {
+			if (i == 25 || player.video.paused) {
 				clearInterval(interval.timer);
 			}
 		},
-		10*player.video.playbackRate);
+		10 * player.video.playbackRate);
 	}
 	function newstat(stat) {
 		if (typeof stat == "string") {
@@ -657,26 +692,110 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	function getVideoMillionSec() {
-		return Math.floor(player.video.currentTime * 100) * 10;
+		return (player.video.currentTime * 100).toFixed() * 10;
 	}
 	danmufuns = {
-		showContextMenu:function(danmuobj){
+		initContextMenu: function() {
+			player.ContextMenu = Glib.getGraphObj("rect", {
+				backgroundColor: "rgba(255,255,255,0.8)",
+				borderWidth: 0.2,
+				borderColor: "rgba(211, 188, 188, 0.91)",
+				width: 100,
+				height: 70,
+				x: 0,
+				y: 0,
+				display: false
+			});
+			player.ContextMenu.zindex(20);
+			player.ContextMenu.content = COL.Graph.NewTextObj("somethig", 16, {
+				autoSize: false,
+				width: 100,
+				height: 20,
+				x: 0,
+				y: 0,
+				overflow: "hidden",
+				color: "rgb(44, 123, 138)"
+			});
 
+			player.ContextMenu.plusone = COL.Graph.NewTextObj("         +1", 16, {
+				autoSize: false,
+				width: 100,
+				height: 20,
+				x: 0,
+				y: 21,
+				overflow: "hidden"
+			});
+
+			player.ContextMenu.copy = COL.Graph.NewTextObj("       复制",16, {
+				autoSize: false,
+				width: 100,
+				height: 20,
+				x: 0,
+				y: 41,
+				overflow: "hidden"
+			});
+
+			COL.Graph.Eventable(player.ContextMenu);
+			COL.Graph.Eventable(player.ContextMenu.copy);
+			COL.Graph.Eventable(player.ContextMenu.plusone);
+
+			player.ContextMenu.addChild(player.ContextMenu.content);
+			player.ContextMenu.addChild(player.ContextMenu.plusone);
+			player.ContextMenu.addChild(player.ContextMenu.copy);
+			COL.document.addChild(player.ContextMenu);
+
+			player.ContextMenu.addEvent("onmouseover",
+			function(e) {
+				e.stopPropagation();
+				if (e.target != player.ContextMenu) {
+					e.target.backgroundColor = "#66ccff";
+				}
+			});
+			player.ContextMenu.addEvent("onmouseout",
+			function(e) {
+				e.stopPropagation();
+				if (e.target != player.ContextMenu) {
+					e.target.backgroundColor = null;
+				}
+			});
+			player.ContextMenu.addEvent("onclick",
+			function(e) {
+				e.stopPropagation();
+				if (e.target == player.ContextMenu.plusone) {
+					danmufuns.send(player.ContextMenu.danmuobj.c);
+					danmufuns.hideContextMenu();
+				} else if (e.target == player.ContextMenu.copy) {
+					//复制内容到剪贴板
+					//window.clipboardData.setData("text/plain",player.ContextMenu.danmuobj.c);
+					danmufuns.hideContextMenu();
+				}
+			});
 		},
-		hideContextMenu:function(){
-			
+		showContextMenu: function(textobj, danmuobj) {
+			player.ContextMenu.display = true;
+			player.ContextMenu.danmuobj = danmuobj;
+			player.ContextMenu.content.setText(danmuobj.c);
+			var x = COL.mouseX,
+			y = COL.mouseY;
+			if (x > width - player.ContextMenu.width) x = width - player.ContextMenu.width;
+			if (y > tunnelheight - player.ContextMenu.height) y = tunnelheight - player.ContextMenu.height;
+			player.ContextMenu.x = x;
+			player.ContextMenu.y = y;
 		},
-		createCommonDanmu: function(danmuobj, tunnelobj) {
+		hideContextMenu: function() {
+			player.ContextMenu.display = false;
+		},
+		createCommonDanmu: function(danmuobj) {
 			//if (!interval.movedanmu) return;
-			if(danmuobj.hasfirstshowed===0){
-				danmuobj.hasfirstshowed=1;
-			}else if(danmuobj.hasfirstshowed==1){
-				danmuobj.hasfirstshowed=null;
+			if (danmuobj.hasfirstshowed === 0) {
+				danmuobj.hasfirstshowed = 1;
+			} else if (danmuobj.hasfirstshowed == 1) {
+				danmuobj.hasfirstshowed = null;
 				return;
 			}
 			var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
 			var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
-			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s + "px", {
+			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s , {
 				color: color,
 				textborderColor: bordercolor,
 				textborderWidth: 0.6,
@@ -685,14 +804,14 @@ function initPlayer(_in_videoid) {
 				fontWeight: 600,
 				realtimeVary: player.o.RealtimeVary
 			});
-			TextDanmu.tunnelobj = tunnelobj;
+			TextDanmu.tunnelobj =danmufuns.getTunnel(danmuobj.ty,TextDanmu.height);
 			switch (danmuobj.ty) {
 			case 0:
 				{
 					TextDanmu.set({
 						x:
 						width,
-						y: tunnelobj[2]
+						y: TextDanmu.tunnelobj[2]
 					});
 					break;
 				}
@@ -701,7 +820,7 @@ function initPlayer(_in_videoid) {
 					TextDanmu.set({
 						x:
 						-TextDanmu.width,
-						y: tunnelobj[2]
+						y: TextDanmu.tunnelobj[2]
 					});
 					break;
 				}
@@ -710,7 +829,7 @@ function initPlayer(_in_videoid) {
 					TextDanmu.setPositionPoint(TextDanmu.width / 2, TextDanmu.height);
 					TextDanmu.set({
 						x: width / 2,
-						y: tunnelheight - tunnelobj[2]
+						y: tunnelheight - TextDanmu.tunnelobj[2]
 					});
 					break;
 				}
@@ -719,33 +838,61 @@ function initPlayer(_in_videoid) {
 					TextDanmu.setPositionPoint(TextDanmu.width / 2, 0);
 					TextDanmu.set({
 						x: width / 2,
-						y: tunnelobj[2]
+						y: TextDanmu.tunnelobj[2]
 					});
 					break;
 				}
-				default:{
+			default:
+				{
 					return;
 				}
 			}
 			if (danmuobj.sended) {
-				TextDanmu.afterdrawfun = function(ct) {
-					ct.strokeStyle = "#66ccff";
-					ct.moveTo(0, TextDanmu.height-5);
-					ct.lineTo(TextDanmu.width, TextDanmu.height-5);
-					ct.stroke();
-				}
+				var lineset=TextDanmu.lineHeight*TextDanmu.varylist.length - 5;
+				TextDanmu.afterdrawfun =eval('function sendedline(ct) {ct.strokeStyle = "#66ccff";ct.moveTo(0,'+lineset+');ct.lineTo('+TextDanmu.width+', '+lineset+');ct.stroke();}') ;
 			}
-			
+			TextDanmu.danmuobj = danmuobj;
+			COL.Graph.Eventable(TextDanmu);
+			TextDanmu.addEvent("onmousedown",
+			function(e) {
+				switch (e.button) {
+				case 0:
+					{
+						if (player.video.paused) {
+							danmufuns.start();
+							player.video.play();
+						} else {
+							player.video.pause();
+						}
+						break;
+					}
+				case 2:
+					{
+						//player.video.pause();
+						danmufuns.showContextMenu(TextDanmu, danmuobj);
+					}
+				}
+			});
 			danmucontainer.addChild(TextDanmu);
 		},
-		send: function() {
-			if (_string_.removesidespace(player.danmuinput.value) != "") {
-				console.log("发送弹幕:" + player.danmuinput.value);
-				player.sendcover.style.display = "block";
-				player.danmuinput.blur();
+		send: function(content) {
+			var c = content ? content: player.danmuinput.value;
+			c=c.replace(/\\n/g,"\n");
+			console.log(c)
+			if (_string_.removesidespace(c) != "") {
+				//console.log("发送弹幕:" + player.danmuinput.value);
+				if (!content) {
+					if (player.assvar.danmusendTimeout) {
+						clearTimeout(player.assvar.danmusendTimeout);
+						player.assvar.danmusendTimeout = 0;
+					}
+					player.sendcover.style.display = "block";
+					player.danmuinput.blur();
+				}
+
 				var time = getVideoMillionSec();
 				var type;
-				console.log(danmuStyle.type);
+				//console.log(danmuStyle.type);
 				if (danmuStyle.type >= 0) {
 					type = danmuStyle.type;
 				} else {
@@ -758,12 +905,12 @@ function initPlayer(_in_videoid) {
 				var danmuobj = {};
 				danmuobj.t = time;
 				danmuobj.id = 0;
-				danmuobj.c = player.danmuinput.value;
+				danmuobj.c = c;
 				danmuobj.co = color;
 				danmuobj.s = danmuStyle.fontsize;
 				danmuobj.ty = type;
 				danmuobj.sended = true;
-				danmuobj.hasfirstshowed=0;
+				danmuobj.hasfirstshowed = 0;
 				var date = new Date();
 				date.day = (date.getDate() < 10) ? "0" + date.getDate() : date.getDate();
 				date.month = date.getMonth() + 1;
@@ -771,26 +918,38 @@ function initPlayer(_in_videoid) {
 				danmuobj.d = date.getFullYear() + "-" + date.month + "-" + date.day;
 				danmufuns.initnewDanmuObj(danmuobj);
 				danmufuns.createCommonDanmu(danmuobj, danmufuns.getTunnel(danmuobj.ty, danmuobj.s));
-				autocmd("adddanmu", (videoid), type, player.danmuinput.value, time, color || "NULL", danmuStyle.fontsize,
+				autocmd("adddanmu", (videoid), type, c, time, color || "NULL", danmuStyle.fontsize,
 				function(response) {
 					if (Number(response) >= 0) {
 						danmuobj.id = Number(response);
-						player.danmuinput.value = "";
-						player.sendcover.style.display = "none";
+						if (!content) {
+							player.danmuinput.value = "";
+							player.sendcover.style.display = "none";
+						}
+
 						danmufuns.refreshnumber();
-						
+
 					} else {
 						console.log(response);
-						player.sendcover.style.display = "none";
+						if (!content) player.sendcover.style.display = "none";
 					}
 				});
+				if (!content) {
+					player.assvar.danmusendTimeout = setTimeout(function() {
+						if (player.sendcover.style.display != "none") {
+							player.sendcover.style.display = "none";
+						}
+					},
+					10000);
+				}
+
 			}
 		},
 		show: function() {
 			if (!AnimationFrame) {
 				function danmurefresh() {
 					if (danmucontainer.drawlist.length == 0) {
-						if(danmucontainer.display)danmucontainer.display = false;
+						if (danmucontainer.display) danmucontainer.display = false;
 					} else if (!danmucontainer.display) {
 						danmucontainer.display = true;
 					}
@@ -849,7 +1008,7 @@ function initPlayer(_in_videoid) {
 				} else if (ind == (i + size - 1)) {
 					break;
 				} else {
-					ind++
+					ind++;
 				};
 			}
 			tunnel[tun][i] = size;
@@ -891,7 +1050,7 @@ function initPlayer(_in_videoid) {
 		},
 		initFirer: function() {
 			danmufuns.setDanmuArray();
-
+			danmufuns.initContextMenu();
 			/*danmufirer.addEventListener('message',
 			function(e) {
 				console.log(e.data);
@@ -912,9 +1071,9 @@ function initPlayer(_in_videoid) {
 						{
 							var roadLength = width + node.width;
 							node.x = roadLength * (1 - (nowtime - node.time) / moveTime) - node.width;
-							if (node.tunnelobj&&node.x < width - node.width - 150) {
-									danmutunnel.right[node.tunnelobj[1]][node.tunnelobj[2]] = null;
-									node.tunnelobj=null;
+							if (node.tunnelobj && node.x < width - node.width - 150) {
+								danmutunnel.right[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+								node.tunnelobj = null;
 							} else if (node.x < -node.width) {
 								COL.Graph.Delete(node);
 							}
@@ -924,9 +1083,9 @@ function initPlayer(_in_videoid) {
 						{
 							var roadLength = width + node.width;
 							node.x = roadLength * (nowtime - node.time) / moveTime - node.width;
-							if (node.tunnelobj&&node.x > 150) {
-									danmutunnel.left[node.tunnelobj[1]][node.tunnelobj[2]] = null;
-									node.tunnelobj=null;
+							if (node.tunnelobj && node.x > 150) {
+								danmutunnel.left[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+								node.tunnelobj = null;
 							} else if (node.x > width) {
 								COL.Graph.Delete(node);
 							}
@@ -962,13 +1121,12 @@ function initPlayer(_in_videoid) {
 			}
 		},
 		fire: function(t) {
-			//console.log("FirePoint:" + t + " VideoTime:" + getVideoMillionSec());
-			if (player.assvar.isPlaying&&danmuarray[t]) {
+			if (player.assvar.isPlaying && danmuarray[t]) {
 				var sendsanmus = [];
 				for (var i = 0; i < danmuarray[t].length; i++) {
 					var tmpd = danmuarray[t][i];
 					if (tmpd.ty <= 3) {
-						danmufuns.createCommonDanmu(tmpd, danmufuns.getTunnel(tmpd.ty, tmpd.s));
+						danmufuns.createCommonDanmu(tmpd/*, danmufuns.getTunnel(tmpd.ty, tmpd.s)*/);
 					} else if (danmuarray[t][i].type == 4) {
 
 }
@@ -986,6 +1144,7 @@ function initPlayer(_in_videoid) {
 				}
 			}
 			timeline = tarr;
+			controlfuns.refreshDanmuMark();
 			//console.log("重置时间轴");
 		},
 		refreshnumber: function() {
@@ -994,6 +1153,7 @@ function initPlayer(_in_videoid) {
 			} else {
 				player.danmucount.innerHTML = "弹幕错误";
 			}
+			player.assvar.danmumark.drawpic(player.loadinfo.width,25,player.assvar.danmumark.drawfunction);
 		}
 
 	}
@@ -1075,6 +1235,9 @@ function initPlayer(_in_videoid) {
 			player.volumestat.innerHTML = "Д";
 		}
 	}
+	controlfuns.refreshDanmuMark=function(){
+		player.assvar.danmumark.drawpic(player.loadinfo.width,25,player.assvar.danmumark.drawfunction);
+	}
 	controlfuns.refreshprogresscanvas = function() {
 		if (player.loadinfo.ctx) {
 			var ct = player.loadinfo.ctx;
@@ -1100,17 +1263,24 @@ function initPlayer(_in_videoid) {
 			ct.fillStyle = "#66CCFF";
 			ct.fillRect(0, 0, player.video.currentTime / d * Xw, 18);
 
+			if(player.o.ProgressDanmumark){
+				if(player.assvar.danmumark.imageobj){
+					ct.drawImage(player.assvar.danmumark.imageobj, 0, 0);
+				}
+
+			}
+
 			//绘制鼠标指着的时间
 			if (player.assvar.pointingtime) {
 				var t = getMin_Sec(player.assvar.pointingtime),
 				x = player.assvar.pointingx;
 				if (x < 33) x = 33;
 				ct.globalCompositeOperation = "lighter";
-				player.loadinfo.ctx.textBaseline = "top";
-				player.loadinfo.ctx.font = "14px '微软雅黑'";
+				ct.textBaseline = "top";
+				ct.font = "14px '微软雅黑'";
 				ct.fillText(t.min + ":" + t.sec, x - 33, 1);
-				player.loadinfo.ctx.strokeStyle = "#66ccff";
-				player.loadinfo.ctx.lineWidth = 1;
+				ct.strokeStyle = "#66ccff";
+				ct.lineWidth = 1;
 				ct.beginPath();
 				ct.moveTo(player.assvar.pointingx, 0);
 				ct.lineTo(player.assvar.pointingx, 25);
@@ -1138,7 +1308,7 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	controlfuns.sidebar_show = function() {
-		console.log("显示边栏");
+		//console.log("显示边栏");
 		removeEleClass(player.videoframe, "sidebarhide_videoframe");
 		removeEleClass(player.sendbox, "sidebarhide_videoframe");
 		removeEleClass(player.sidebar, "sidebarhide_sidebar");
@@ -1190,12 +1360,23 @@ function initPlayer(_in_videoid) {
 			off: function() {
 				setOption("ThreeDCodeDanmu", "false");
 			}
+		},
+		ProgressDanmumark:{
+			on:function(){
+				player.o.ProgressDanmumark=true;
+				controlfuns.refreshprogresscanvas();
+				setOption("ProgressDanmumark", "true");
+			},
+			off:function(){
+				player.o.ProgressDanmumark=false;
+				controlfuns.refreshprogresscanvas();
+				setOption("ProgressDanmumark", "false");
+			}
 		}
 	};
-	rangeCenter={
-		PlaySpeed:function(value){
-			if(value>0)
-			player.video.playbackRate=value;
+	rangeCenter = {
+		PlaySpeed: function(value) {
+			if (value > 0) player.video.playbackRate = value;
 		}
 	};
 
@@ -1203,6 +1384,7 @@ function initPlayer(_in_videoid) {
 		var video = player.video;
 		COL.document.addEvent("onclick",
 		function(e) {
+			danmufuns.hideContextMenu();
 			if (e.target == COL.document) {
 				if (video.paused) {
 					danmufuns.start();
@@ -1322,27 +1504,7 @@ function initPlayer(_in_videoid) {
 					break;
 				}
 			}
-		});
-		/*aEL(player.switchs.RealtimeVary, "click",
-		function() {
-			if (player.switchs.RealtimeVary.event.bool) {
-				player.o.RealtimeVary=true;
-				setOption("RealtimeVary", "true");
-			} else {
-				player.o.RealtimeVary=false;
-				setOption("RealtimeVary", "false");
-			}
-		});*/
-		/*aEL(player.switchs.Debug, "click",
-		function() {
-			if (player.switchs.Debug.event.bool) {
-				COL.Debug.on();
-				setOption("Debug", "true");
-			} else {
-				COL.Debug.off();
-				setOption("Debug", "false");
-			}
-		});*/
+		})
 		aEL(player.progress, "mousedown",
 		function(e) {
 			e.preventDefault();
@@ -1549,11 +1711,11 @@ function initPlayer(_in_videoid) {
 			e.preventDefault();
 			player.o.loop = !player.o.loop;
 			if (player.o.loop) {
-				console.log("循环播放");
+				//console.log("循环播放");
 				player.video.loop = true;
 				player.loop.style.color = "#66ccff";
 			} else {
-				console.log("取消循环");
+				//console.log("取消循环");
 				player.video.loop = false;
 				player.loop.style.color = "#000";
 			}
@@ -1591,6 +1753,7 @@ function initPlayer(_in_videoid) {
 			console.log("事件:加载视频元信息");
 			player.o.totaltime = video.duration; //获取媒体总时间
 			controlfuns.refreshtime();
+			controlfuns.refreshDanmuMark();
 		});
 		aEL(video, "volumechange",
 		function() {
@@ -1654,10 +1817,10 @@ function initPlayer(_in_videoid) {
 		aEL(video, "timeupdate",
 		function() {
 			//console.log("事件:播放时间改变  "+video.currentTime);
-			if(!player.video.paused){
-				player.assvar.isPlaying=true;
+			if (!player.video.paused) {
+				player.assvar.isPlaying = true;
 			}
-			
+
 			controlfuns.refreshprogresscanvas();
 			controlfuns.refreshtime();
 			newTimePiece(getVideoMillionSec());
@@ -1686,9 +1849,7 @@ function initPlayer(_in_videoid) {
 	loadvideo();
 	loaddanmu();
 	setAllIntervals();
-	//COL.Debug.on();
 }
-
 window.onload = function() {
 	UseDanmuPlayer();
 	/*var r=Glib.getGraphObj("star",{color:"#fff",r:100});
@@ -1698,7 +1859,7 @@ window.onload = function() {
 
 	/*var inte=COL.tools.Linear.go(0,1000,5000,function(p){r.rotate=p;console.log(inte.c)
 		if(inte.c==inte.totlac-10){COL.tools.Linear.setProcess(inte,0);}},60);*/
-	
+
 }
 
 /*
