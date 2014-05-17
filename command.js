@@ -12,7 +12,7 @@ function cmd(command, bool, callback) { //bool为是否需要等待返回参数
 	xmlhttp.onreadystatechange = function() {
 		if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 			if (!bool) {
-				console.log("异步接收到了命令:" + command + "的成功回应\n执行回调函数");
+				//console.log("异步接收到了命令:" + command + "的成功回应\n执行回调函数");
 				(function(r){
 					callback(r);
 				})(xmlhttp.responseText);

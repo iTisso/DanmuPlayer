@@ -328,9 +328,9 @@ function newC_GUI() {
 	};
 
 	C_GUI.Graph = {
-		New: function(newname) {
+		New: function(opjson) {
 			var g = {
-				name: newname,
+				name:null,
 				GraphID: C_GUI.generateGraphID(),
 				y: 0,
 				x: 0,
@@ -493,6 +493,11 @@ function newC_GUI() {
 					}
 				}
 			};
+			if (opjson) {
+				for (var ob in opjson) {
+					g[ob] = opjson[ob];
+				}
+			}
 			return g;
 		},
 		NewImageObj: function(image) {

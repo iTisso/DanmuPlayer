@@ -259,7 +259,7 @@ default = e.value;
 			//this.title=Math.round((this.value=va)*100)/100;
 			this.sendValue(this.name, va);
 		}
-		this.title = Math.round((this.min + (x / this.offsetWidth) * (this.max - this.min)) * 1000) / 1000;
+		this.title =(this.min + (x / this.offsetWidth) * (this.max - this.min)).toFixed(3);
 	}
 	e.onmouseleave = function() {
 		this.ranging = false;
@@ -337,7 +337,6 @@ function initPlayer(_in_videoid) {
 		left: [],
 		bottom: [],
 		top: []
-
 	},
 	//moverInterval = 1000 / 61,
 	moveTime = 5000,
@@ -408,7 +407,7 @@ function initPlayer(_in_videoid) {
 		Glib = getGraphlib(COL);
 		//window.doc = COL.document;
 		initTextDanmuContainer();
-		fitdanmulayer();
+		
 	}
 	function initTextDanmuContainer() {
 		/*window.ctt = */
@@ -430,6 +429,7 @@ function initPlayer(_in_videoid) {
 	}
 	function setPlayOption() {
 		player.o.recycle = false;
+
 		//player.o.playspeed = 1;
 	}
 	function setDefaultOption() {
@@ -438,6 +438,7 @@ function initPlayer(_in_videoid) {
 			setOption("ThreeDCodeDanmu", "true");
 			setOption("PlaySpeed", "1");
 			setOption("DefaultSetted", "true");
+			setOption("ProgressDanmumark", "false");
 		}
 	}
 	function loadoption() {
@@ -447,6 +448,30 @@ function initPlayer(_in_videoid) {
 		player.o = {},
 		player.assvar = {},
 		player.switchs = {};
+		player.assvar.danmufeng=0;
+		player.assvar.danmumark=COL.Graph.New({drawtype:"image"});
+		player.assvar.danmumark.drawfunction=function(ct){
+			var Xw = player.loadinfo.width,
+			d = player.o.totaltime;
+			ct.clearRect(0,0,Xw,25);
+				ct.beginPath();
+				var left=0,color,cutnum;
+				for(var time in danmuarray){
+					ct.save();
+					left=time/1000/ d * Xw;
+					cutnum=danmuarray[time].length;
+					if(cutnum>player.assvar.danmufeng)player.assvar.danmufeng=cutnum;
+					//color=(cutnum/player.assvar.danmufeng*255).toFixed();
+					ct.beginPath();
+					//ct.strokeStyle="rgba("+color+","+color+","+color+",1)";
+					ct.strokeStyle="rgba(125, 156, 156,"+(cutnum/player.assvar.danmufeng+0.5)+")";
+					ct.moveTo(left,0);
+					ct.lineTo(left,6);
+					ct.stroke();
+					ct.restore();
+				}
+				//ct.stroke();
+		}
 		controlfuns.sidebar_show();
 		if (getOption("Debug") == "true") {
 			COL.Debug.on();
@@ -454,11 +479,14 @@ function initPlayer(_in_videoid) {
 		if (getOption("DefaultHideSideBar") == "true") {
 			controlfuns.sidebar_hide();
 		}
+		if(getOption("ProgressDanmumark") == "true"){
+			player.o.ProgressDanmumark=true;
+		}
 		player.o.RealtimeVary = getOption("RealtimeVary") == "true" ? true: false;
-
+		fitdanmulayer();
 	}
 	function loadvideo() {
-		console.log("加载视频");
+		//console.log("加载视频");
 		newstat("获取视频地址");
 		cmd("getVideoAddress " + videoid, false,
 		function(a) {
@@ -527,7 +555,7 @@ function initPlayer(_in_videoid) {
 	}
 
 	function loaddanmu() {
-		console.log("加载弹幕");
+		//console.log("加载弹幕");
 		newstat("加载弹幕");
 		danmufuns.show();
 		cmd("getDanmu " + videoid, false,
@@ -555,12 +583,11 @@ function initPlayer(_in_videoid) {
 					}
 				}
 				danmulist = danmuarr;
-				//console.log(danmuarr);
 				danmucount = danmuarr.length;
 				listdanmu();
-				danmufuns.refreshnumber();
 				danmufuns.setTimeline();
 				danmufuns.initFirer();
+				danmufuns.refreshnumber();
 				//danmuListener();
 				/*if (!danmufirer) {
 					if (window.Worker) {
@@ -572,7 +599,6 @@ function initPlayer(_in_videoid) {
 					}
 				}*/
 			}
-			// danmufuns.show();
 		});
 	}
 	function setAllIntervals() {
@@ -604,6 +630,7 @@ function initPlayer(_in_videoid) {
 				});
 			}
 		}
+		controlfuns.refreshDanmuMark();
 	}
 	function initSwitch() {
 		var switchs = d_selectall(player.optionpannel, "div[switch]");
@@ -665,7 +692,7 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	function getVideoMillionSec() {
-		return Math.floor(player.video.currentTime * 100) * 10;
+		return (player.video.currentTime * 100).toFixed() * 10;
 	}
 	danmufuns = {
 		initContextMenu: function() {
@@ -1094,7 +1121,6 @@ function initPlayer(_in_videoid) {
 			}
 		},
 		fire: function(t) {
-			//console.log("FirePoint:" + t + " VideoTime:" + getVideoMillionSec());
 			if (player.assvar.isPlaying && danmuarray[t]) {
 				var sendsanmus = [];
 				for (var i = 0; i < danmuarray[t].length; i++) {
@@ -1118,6 +1144,7 @@ function initPlayer(_in_videoid) {
 				}
 			}
 			timeline = tarr;
+			controlfuns.refreshDanmuMark();
 			//console.log("重置时间轴");
 		},
 		refreshnumber: function() {
@@ -1126,6 +1153,7 @@ function initPlayer(_in_videoid) {
 			} else {
 				player.danmucount.innerHTML = "弹幕错误";
 			}
+			player.assvar.danmumark.drawpic(player.loadinfo.width,25,player.assvar.danmumark.drawfunction);
 		}
 
 	}
@@ -1207,6 +1235,9 @@ function initPlayer(_in_videoid) {
 			player.volumestat.innerHTML = "Д";
 		}
 	}
+	controlfuns.refreshDanmuMark=function(){
+		player.assvar.danmumark.drawpic(player.loadinfo.width,25,player.assvar.danmumark.drawfunction);
+	}
 	controlfuns.refreshprogresscanvas = function() {
 		if (player.loadinfo.ctx) {
 			var ct = player.loadinfo.ctx;
@@ -1232,17 +1263,24 @@ function initPlayer(_in_videoid) {
 			ct.fillStyle = "#66CCFF";
 			ct.fillRect(0, 0, player.video.currentTime / d * Xw, 18);
 
+			if(player.o.ProgressDanmumark){
+				if(player.assvar.danmumark.imageobj){
+					ct.drawImage(player.assvar.danmumark.imageobj, 0, 0);
+				}
+
+			}
+
 			//绘制鼠标指着的时间
 			if (player.assvar.pointingtime) {
 				var t = getMin_Sec(player.assvar.pointingtime),
 				x = player.assvar.pointingx;
 				if (x < 33) x = 33;
 				ct.globalCompositeOperation = "lighter";
-				player.loadinfo.ctx.textBaseline = "top";
-				player.loadinfo.ctx.font = "14px '微软雅黑'";
+				ct.textBaseline = "top";
+				ct.font = "14px '微软雅黑'";
 				ct.fillText(t.min + ":" + t.sec, x - 33, 1);
-				player.loadinfo.ctx.strokeStyle = "#66ccff";
-				player.loadinfo.ctx.lineWidth = 1;
+				ct.strokeStyle = "#66ccff";
+				ct.lineWidth = 1;
 				ct.beginPath();
 				ct.moveTo(player.assvar.pointingx, 0);
 				ct.lineTo(player.assvar.pointingx, 25);
@@ -1270,7 +1308,7 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	controlfuns.sidebar_show = function() {
-		console.log("显示边栏");
+		//console.log("显示边栏");
 		removeEleClass(player.videoframe, "sidebarhide_videoframe");
 		removeEleClass(player.sendbox, "sidebarhide_videoframe");
 		removeEleClass(player.sidebar, "sidebarhide_sidebar");
@@ -1321,6 +1359,18 @@ function initPlayer(_in_videoid) {
 			},
 			off: function() {
 				setOption("ThreeDCodeDanmu", "false");
+			}
+		},
+		ProgressDanmumark:{
+			on:function(){
+				player.o.ProgressDanmumark=true;
+				controlfuns.refreshprogresscanvas();
+				setOption("ProgressDanmumark", "true");
+			},
+			off:function(){
+				player.o.ProgressDanmumark=false;
+				controlfuns.refreshprogresscanvas();
+				setOption("ProgressDanmumark", "false");
 			}
 		}
 	};
@@ -1661,11 +1711,11 @@ function initPlayer(_in_videoid) {
 			e.preventDefault();
 			player.o.loop = !player.o.loop;
 			if (player.o.loop) {
-				console.log("循环播放");
+				//console.log("循环播放");
 				player.video.loop = true;
 				player.loop.style.color = "#66ccff";
 			} else {
-				console.log("取消循环");
+				//console.log("取消循环");
 				player.video.loop = false;
 				player.loop.style.color = "#000";
 			}
@@ -1703,6 +1753,7 @@ function initPlayer(_in_videoid) {
 			console.log("事件:加载视频元信息");
 			player.o.totaltime = video.duration; //获取媒体总时间
 			controlfuns.refreshtime();
+			controlfuns.refreshDanmuMark();
 		});
 		aEL(video, "volumechange",
 		function() {
@@ -1798,9 +1849,7 @@ function initPlayer(_in_videoid) {
 	loadvideo();
 	loaddanmu();
 	setAllIntervals();
-	//COL.Debug.on();
 }
-
 window.onload = function() {
 	UseDanmuPlayer();
 	/*var r=Glib.getGraphObj("star",{color:"#fff",r:100});
