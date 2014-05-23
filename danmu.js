@@ -342,11 +342,12 @@ function initPlayer(_in_videoid) {
 	var videoid = _in_videoid;
 	var width, height;
 	var player = {},
-	interval = {},
-	intervalfuns = {},
+	intervals = {},
+	timeouts={},
+	//intervalfuns = {},
 	controlfuns = {};
 	localstoragesupport = window.localStorage ? true: false;
-
+	timeouts.fun={};
 	var danmulist = [],
 	danmufuns = {},
 	danmuobjlist = [],
@@ -357,7 +358,7 @@ function initPlayer(_in_videoid) {
 		bottom: [],
 		top: []
 	},
-	//moverInterval = 1000 / 61,
+	moverInterval = 1000 / 59,
 	moveTime = 5000,
 	tunnelheight = 0,
 	onshowdanmulist = [],
@@ -377,7 +378,7 @@ function initPlayer(_in_videoid) {
 		type: 0
 	};
 
-	var COL, Glib, AnimationFrame;
+	var COL, Glib, AnimationFrame,moverAnimation;
 
 	function setdom() {
 		player.displaystat = "normal";
@@ -424,22 +425,25 @@ function initPlayer(_in_videoid) {
 		makeTabGroup([[player.danmulistbutton,d_select(player.sidebar,"#danmupool")],[player.superdanmubutton,d_select(player.sidebar,"#superdanmueditor")],[player.optionbutton,player.optionpannel]]);
 		makeTabGroup([[d_select(player.sidebar,"#chooseText"),d_select(player.sidebar,"#SuperTextTab")],[d_select(player.sidebar,"#chooseCode"),d_select(player.sidebar,"#SupeCodeTab")]]);
 		player.loadinfo.height = player.progress.offsetHeight;
-		COL = newC_GUI();
+		var dcm=player.danmuContextMenu=c_ele("div");
+		dcm.className="textContextMenu";
+		initCOL();
+	}
+	function initCOL(){
+		COL = newCOL();
 		COL.font.color = "#ffffff";
 		COL.font.fontFamily = "'黑体'";
 		COL.setCanvas(player.danmulayer);
 		COL.autoClear = true;
 		Glib = getGraphlib(COL);
-		//window.doc = COL.document;
 		initTextDanmuContainer();
-		
-		
+
 	}
 	function initTextDanmuContainer() {
 		/*window.ctt = */
 		/*普通弹幕层*/
 		danmucontainer = COL.Graph.New();
-		COL.Graph.Eventable(danmucontainer);
+		//COL.Graph.Eventable(danmucontainer);
 		danmucontainer.name = "danmucontainer";
 		danmucontainer.needsort = false;
 		COL.document.addChild(danmucontainer);
@@ -646,6 +650,12 @@ function initPlayer(_in_videoid) {
 		});
 	}
 	function setAllIntervals() {
+		//var intervals={},timeouts={};
+		//timeouts.fun={};
+		/*timeouts.fun.mover=function(){
+			danmufuns.mover();
+			timeouts.mover=setTimeout(function(){timeouts.fun.mover();},moverInterval);
+		}*/
 		/*interval.movedanmufun = function() {
 			if (interval.movedanmu) clearInterval(interval.movedanmu);
 			interval.movedanmu = setInterval(function() {
@@ -719,9 +729,9 @@ function initPlayer(_in_videoid) {
 		}
 	}
 	function newTimePiece(t) {
-		if (interval.timer) {
-			clearInterval(interval.timer);
-			interval.timer = 0;
+		if (intervals.timer) {
+			clearInterval(intervals.timer);
+			intervals.timer = 0;
 		}
 		if (!player.assvar.isPlaying||player.video.paused) return;
 		if (t >= timepoint) {
@@ -732,14 +742,14 @@ function initPlayer(_in_videoid) {
 			return;
 		}
 		timepoint = t + 10;
-		interval.timer = setInterval(function() {
+		intervals.timer = setInterval(function() {
 			if (!player.assvar.isPlaying||player.video.paused) return;
 			if (timeline[timepoint]) {
 				danmufuns.fire(timepoint);
 			}
 			timepoint += 10;
 			if (i == 25 || player.video.paused) {
-				clearInterval(interval.timer);
+				clearInterval(intervals.timer);
 			}
 		},
 		10 * player.video.playbackRate);
@@ -802,21 +812,21 @@ function initPlayer(_in_videoid) {
 			player.ContextMenu.addChild(player.ContextMenu.copy);
 			COL.document.addChild(player.ContextMenu);
 
-			player.ContextMenu.addEvent("onmouseover",
+			player.ContextMenu.addEvent("mouseover",
 			function(e) {
 				e.stopPropagation();
 				if (e.target != player.ContextMenu) {
 					e.target.backgroundColor = "#66ccff";
 				}
 			});
-			player.ContextMenu.addEvent("onmouseout",
+			player.ContextMenu.addEvent("mouseout",
 			function(e) {
 				e.stopPropagation();
 				if (e.target != player.ContextMenu) {
 					e.target.backgroundColor = null;
 				}
 			});
-			player.ContextMenu.addEvent("onclick",
+			player.ContextMenu.addEvent("click",
 			function(e) {
 				e.stopPropagation();
 				if (e.target == player.ContextMenu.plusone) {
@@ -851,6 +861,7 @@ function initPlayer(_in_videoid) {
 				danmuobj.hasfirstshowed = null;
 				return;
 			}
+			//console.log(1)
 			var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
 			var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
 			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s , {
@@ -862,7 +873,7 @@ function initPlayer(_in_videoid) {
 				fontWeight: 600,
 				realtimeVary: player.o.RealtimeVary
 			});
-			TextDanmu.tunnelobj =danmufuns.getTunnel(danmuobj.ty,TextDanmu.height);
+			TextDanmu.tunnelobj =danmufuns.getTunnel(danmuobj.ty,TextDanmu.lineHeight);
 			switch (danmuobj.ty) {
 			case 0:
 				{
@@ -911,7 +922,7 @@ function initPlayer(_in_videoid) {
 			}
 			TextDanmu.danmuobj = danmuobj;
 			COL.Graph.Eventable(TextDanmu);
-			TextDanmu.addEvent("onmousedown",
+			TextDanmu.addEvent("mousedown",
 			function(e) {
 				switch (e.button) {
 				case 0:
@@ -1003,29 +1014,42 @@ function initPlayer(_in_videoid) {
 
 			}
 		},
-		show: function() {
+		showtextdanmu:function(){
+			danmucontainer.display=player.o.textdanmu=true;
 			if (!AnimationFrame) {
 				function danmurefresh() {
-					if (danmucontainer.drawlist.length == 0) {
-						if (danmucontainer.display) danmucontainer.display = false;
-					} else if (!danmucontainer.display) {
-						danmucontainer.display = true;
-					}
-					danmufuns.mover();
-					COL.draw();
-					AnimationFrame = requestAnimationFrame(danmurefresh);
+					
+					AnimationFrame = requestAnimationFrame(danmurefresh);COL.draw();
 				}
-				requestAnimationFrame(danmurefresh);
+				AnimationFrame=requestAnimationFrame(danmurefresh);
 				player.danmuframe.style.display = "block";
 			}
+			if(!moverAnimation){
+				function movedanmu() {
+					moverAnimation = requestAnimationFrame(movedanmu);
+						danmufuns.mover();
+				}
+				moverAnimation=requestAnimationFrame(movedanmu);
+			}
 		},
-		hide: function() {
+		hidetextdanmu:function(){
+			danmucontainer.display=player.o.textdanmu=false;
 			if (AnimationFrame) {
 				danmucontainer.display = false;
 				cancelAnimationFrame(AnimationFrame);
 				AnimationFrame = 0;
 				player.danmuframe.style.display = "none";
 			}
+			if(moverAnimation){
+				cancelAnimationFrame(moverAnimation);
+				moverAnimation=0;
+			}
+		},
+		show: function() {
+			this.showtextdanmu();
+		},
+		hide: function() {
+			this.hidetextdanmu();
 		},
 		getTunnel: function(type, size) {
 			var tunnel;
@@ -1095,7 +1119,6 @@ function initPlayer(_in_videoid) {
 				left: [],
 				bottom: [],
 				top: []
-
 			};
 		},
 		start: function() {
@@ -1120,7 +1143,7 @@ function initPlayer(_in_videoid) {
 		},
 		mover: function() {
 			if (player.assvar.isPlaying) {
-				var nowtime = Math.floor(player.video.currentTime * 1000);
+				var nowtime = (player.video.currentTime * 1000).toFixed();
 				for (var i = 0; i < danmucontainer.drawlist.length; i++) {
 					var node = danmucontainer.drawlist[i];
 					if (!node) continue;
@@ -1179,14 +1202,17 @@ function initPlayer(_in_videoid) {
 			}
 		},
 		fire: function(t) {
-			if (player.assvar.isPlaying && danmuarray[t]) {
-				var sendsanmus = [];
+			if (/*player.assvar.isPlaying && */danmuarray[t]) {
 				for (var i = 0; i < danmuarray[t].length; i++) {
 					var tmpd = danmuarray[t][i];
-					if (tmpd.ty <= 3) {
-						danmufuns.createCommonDanmu(tmpd/*, danmufuns.getTunnel(tmpd.ty, tmpd.s)*/);
-					} else if (danmuarray[t][i].type == 4) {
+					if (tmpd.ty <= 3&&tmpd.ty>=0) {
+						if(player.o.textdanmu==true){
+							danmufuns.createCommonDanmu(tmpd);
+						}
+					} else if (tmpd.ty == 4) {
 
+}else if(tmpd.ty==5){
+	tmpd.fun();
 }
 				}
 			}
@@ -1214,7 +1240,7 @@ function initPlayer(_in_videoid) {
 			player.assvar.danmumark.drawpic(player.loadinfo.width,25,player.assvar.danmumark.drawfunction);
 		},
 		zimurevolution:function(zinuobj){
-			
+
 		}
 
 	}
@@ -1332,7 +1358,7 @@ function initPlayer(_in_videoid) {
 			}
 
 			//绘制鼠标指着的时间
-			if (player.assvar.pointingtime) {
+			if (player.assvar.pointingtime>=0) {
 				var t = getMin_Sec(player.assvar.pointingtime),
 				x = player.assvar.pointingx;
 				if (x < 33) x = 33;
@@ -1447,7 +1473,7 @@ function initPlayer(_in_videoid) {
 	};
 	function initevents() {
 		var video = player.video;
-		COL.document.addEvent("onclick",
+		COL.document.addEvent("click",
 		function(e) {
 			danmufuns.hideContextMenu();
 			if (e.target == COL.document) {
@@ -1459,13 +1485,13 @@ function initPlayer(_in_videoid) {
 				}
 			}
 		});
-		danmucontainer.addEvent("onmousedown",
+		/*danmucontainer.addEvent("mousedown",
 		function(e) {
 			if (COL.mouseright) {
 				e.stopPropagation();
 				//
 			}
-		});
+		});*/
 		aEL(player.colorinput, "input",
 		function() {
 			if (isHexColor(player.colorinput.value)) {
@@ -1501,11 +1527,8 @@ function initPlayer(_in_videoid) {
 		function() {
 			if (player.danmuframe.style.display == "none") {
 				danmufuns.show();
-				//interval.movedanmufun();
 			} else {
 				danmufuns.hide();
-				//clearInterval(interval.movedanmu);
-				//interval.movedanmu = 0;
 				danmufuns.clear();
 			}
 		});
@@ -1585,7 +1608,7 @@ function initPlayer(_in_videoid) {
 		function(e) {
 			e.preventDefault();
 			progressmousekey = true;
-			var x = e.offsetX || e.x || e.layerX;
+			var x = e.offsetX || e.layerX;
 			video.currentTime = x / player.progress.offsetWidth * player.video.duration;
 		});
 		aEL(document, "mouseup",
@@ -1597,7 +1620,7 @@ function initPlayer(_in_videoid) {
 		aEL(player.progress, "mousemove",
 		function(e) {
 			e.preventDefault();
-			var x = e.offsetX || e.x || e.layerX;
+			var x = e.offsetX ||e.layerX;
 			var time = x / player.progress.offsetWidth * player.video.duration;
 			if (progressmousekey) {
 				video.currentTime = time;
@@ -1608,7 +1631,7 @@ function initPlayer(_in_videoid) {
 		});
 		aEL(player.progress, "mouseleave",
 		function(e) {
-			player.assvar.pointingtime = null;
+			player.assvar.pointingtime = -1;
 			controlfuns.refreshprogresscanvas();
 		});
 		aEL(player.volumerange, "mousedown",
@@ -1922,10 +1945,10 @@ function initPlayer(_in_videoid) {
 	initSwitch();
 	initRange();
 	initInput();
-	initevents();
+	initevents();setAllIntervals();
 	loadvideo();
 	loaddanmu();
-	setAllIntervals();
+	
 }
 window.onload = function() {
 	UseDanmuPlayer();
@@ -1952,7 +1975,16 @@ window.onload = function() {
                                          ##           ##           ##
                                          #################
 */
+var 喵="不要卖萌눈_눈";
 /*字幕对象结构*/
-{id:id,ty:5,c:"{主要结构}}",t:null,s:null,d:"2014-05-17"}
+/*{id:id,ty:5,c:"{主要结构}}",t:null,s:null,d:"2014-05-17"}
 
 {start:10000,end:675470,content:"我了个喵",fontSize:50,rotate:30}
+{time:12000,linear:true,x:100,y:200}
+{time:15000,color:"#66ccff"}*/
+
+/*字幕对象在时间轴中的结构
+danmuarray[t][i]
+.ty=5;
+.fun=function
+.obj=zimuobj*/
