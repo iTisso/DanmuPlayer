@@ -733,3 +733,49 @@ left:0px;
 height:100%;
 width: 100%;
 	}
+
+.playermainbody #sidebar #superdanmueditor #supertabchoose{
+	background-color: #A6A6E6;
+	z-index: 100;
+position: absolute;
+top: 10px;
+left: -23px;
+width: 27px;
+height: 50px;
+cursor: pointer;
+transition:left 0.1s;
+}
+.playermainbody #sidebar #superdanmueditor #supertabchoose:hover{
+left:0px;
+}
+.playermainbody #sidebar #supertabchoose div{
+position: absolute;
+width: 100%;
+color: #fff;
+height: 25px;text-align: center;
+line-height: 25px;left: 0px;transition: background-color 0.1s;
+}
+.playermainbody #sidebar #superdanmueditor #chooseText{
+top: 0px;
+}
+.playermainbody #sidebar #chooseText:hover{
+background-color:rgba(110, 123, 129, 0.67);
+}
+.playermainbody #sidebar #superdanmueditor #chooseCode{
+top: 25px;
+}
+.playermainbody #sidebar #chooseCode:hover{
+background-color:rgba(38, 134, 123, 0.83);
+}
+.playermainbody #sidebar .SuperTab{
+	position: relative;
+	margin-top: 26px;
+width: 100%;
+}
+.playermainbody #sidebar #SuperTextTab{
+background-color: #ccc;
+}
+.playermainbody #sidebar #SupeCodeTab{
+	background-color: #000;
+	display: none;
+}

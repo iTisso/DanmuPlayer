@@ -2,8 +2,8 @@
 CopyRight(Left) iTisso
 member:LuoJia
 */
-function newC_GUI() {
-	var C_GUI = {
+function newCOL() {
+	var COL = {
 		keys: [],
 		/*主canvas*/
 		/*The main canvas*/
@@ -35,23 +35,21 @@ function newC_GUI() {
 		document: null,
 		onoverElement: null,
 		tmpGraphID: 0,
+		tmpEventID: 0,
 		fps: {
 			c: 0,
 			v: 0,
 			i: null
 		},
-		eve: {},
-		commonevents: ["mouseover", "mouseout", "mousemove", "mousewheel", "mouseup", "click", "centerclick", "rightclick", "mousedown", "keydown", "keyup", "keypress"],
 		e: {
 			mouseoutcanvas: function() {
-				C_GUI.mouseX = null;
-				C_GUI.mouseY = null;
-				if (C_GUI.onoverElement && C_GUI.onoverElement.mouseout) {
-					C_GUI.eve.target = C_GUI.onoverElement;
-					C_GUI.onoverElement.mouseout(C_GUI.eve);
+				COL.mouseX = null;
+				COL.mouseY = null;
+				if (COL.onoverElement) {
+					var eve = COL.event();
+					COL.onoverElement.fireEvent("mouseout", eve);
 				}
-				C_GUI.onoverElement = null;
-				//C_GUI.canvasonfocus = false;
+				COL.onoverElement = null;
 			}
 		},
 		tosign: {
@@ -59,13 +57,15 @@ function newC_GUI() {
 			centerclick: false,
 			rightcilck: false,
 			onmoveele: null,
-			drag: false
+			draging: false
 		},
 		event: function() {
-			this.stopPropagation = function() {
-				this.Propagation = false;
-			};
-			this.Propagation = true;
+			return {
+				stopPropagation: function() {
+					this.Propagation = false;
+				},
+				Propagation: true
+			}
 		},
 
 		/*在当前基础上新建一个对象*/
@@ -74,37 +74,36 @@ function newC_GUI() {
 			return Object.create(this);
 		}
 	};
-	C_GUI.generateGraphID = function() {
-		C_GUI.tmpGraphID++;
-		return C_GUI.tmpGraphID;
+	COL.generateGraphID = function() {
+		return ++COL.tmpGraphID;
 	};
-	C_GUI.imageSmoothing = {
+	COL.imageSmoothing = {
 		on: function() {
-			if (C_GUI.buffercontext) C_GUI.buffercontext.imageSmoothingEnabled = true;
-			C_GUI.context.imageSmoothingEnabled = true;
+			if (COL.buffercontext) COL.buffercontext.imageSmoothingEnabled = true;
+			COL.context.imageSmoothingEnabled = true;
 		},
 		off: function() {
-			if (C_GUI.buffercontext) C_GUI.buffercontext.imageSmoothingEnabled = false;
-			C_GUI.context.imageSmoothingEnabled = false;
+			if (COL.buffercontext) COL.buffercontext.imageSmoothingEnabled = false;
+			COL.context.imageSmoothingEnabled = false;
 		}
 	};
-	C_GUI.setrelPosition = function() {
-		switch (C_GUI.tools.getBrowser()) {
+	COL.setrelPosition = function() {
+		switch (COL.tools.getBrowser()) {
 		case "msie":
 		case "trident":
 		case "opera":
 			{
-				C_GUI.mousePosition.fun = C_GUI.mousePosition.ie;
+				COL.mousePosition.fun = COL.mousePosition.ie;
 				break;
 			}
 		case "firefox":
 			{
-				C_GUI.mousePosition.fun = C_GUI.mousePosition.firefox;
+				COL.mousePosition.fun = COL.mousePosition.firefox;
 				break;
 			}
 		default:
 			{
-				C_GUI.mousePosition.fun = C_GUI.mousePosition.chrome;
+				COL.mousePosition.fun = COL.mousePosition.chrome;
 				break;
 			}
 		}
@@ -113,19 +112,19 @@ function newC_GUI() {
 
 	/*创建图形用的画布*/
 	/*A canvas to create picture*/
-	C_GUI.imagecreater = {
+	COL.imagecreater = {
 		creatercanvas: null,
 		creatercontext: null,
 		init: function() {
-			C_GUI.imagecreater.creatercanvas = document.createElement("canvas");
-			C_GUI.imagecreater.creatercontext = C_GUI.imagecreater.creatercanvas.getContext("2d");
+			COL.imagecreater.creatercanvas = document.createElement("canvas");
+			COL.imagecreater.creatercontext = COL.imagecreater.creatercanvas.getContext("2d");
 		},
 		drawpic: function(_width, _height, _draw) {
-			if (!C_GUI.imagecreater.creatercontext) C_GUI.imagecreater.init();
-			var ct = C_GUI.imagecreater.creatercontext,
-			cv = C_GUI.imagecreater.creatercanvas;
-			C_GUI.imagecreater.creatercanvas.width = _width;
-			C_GUI.imagecreater.creatercanvas.height = _height;
+			if (!COL.imagecreater.creatercontext) COL.imagecreater.init();
+			var ct = COL.imagecreater.creatercontext,
+			cv = COL.imagecreater.creatercanvas;
+			COL.imagecreater.creatercanvas.width = _width;
+			COL.imagecreater.creatercanvas.height = _height;
 			_draw(ct);
 			var c = document.createElement("canvas");
 			c.width = _width;
@@ -137,66 +136,94 @@ function newC_GUI() {
 
 	/*设置主画布*/
 	/*set main canvas*/
-	C_GUI.setCanvas = function(canvas_dom) {
-		C_GUI.canvas = canvas_dom;
-		C_GUI.setrelPosition();
+	COL.setCanvas = function(canvas_dom) {
+		COL.canvas = canvas_dom;
+		COL.setrelPosition();
 		canvas_dom.width = canvas_dom.offsetWidth;
 		canvas_dom.height = canvas_dom.offsetHeight;
 		/*Solve events*/
-		C_GUI.eve.stopPropagation = function() {
-			C_GUI.eve.Propagation = false;
-		};
-		var aEL = C_GUI.tools.addEventListener;
+		var aEL = COL.tools.addEventListener;
 		aEL(canvas_dom, "mouseover",
 		function(e) {
-			C_GUI.canvasonfocus = true;
+			COL.canvasonfocus = true;
 		});
 		aEL(canvas_dom, "mousemove",
 		function(e) {
 			//e.preventDefault();
-			C_GUI.eve = new C_GUI.event();
-			C_GUI.eve.target = C_GUI.onoverElement;
-			C_GUI.mousePosition.fun(e);
-			if (C_GUI.onoverElement && C_GUI.onoverElement.mousemove) {
-				C_GUI.onoverElement.mousemove(C_GUI.eve);
+			var eve = COL.event();
+			eve.target = COL.onoverElement;
+			COL.mousePosition.fun(e);
+			if (COL.onoverElement) {
+				COL.onoverElement.fireEvent("mousemove", eve);
 			}
 		});
 		aEL(canvas_dom, "mousedown",
 		function(e) {
-			C_GUI.canvasonfocus = true;
+			COL.canvasonfocus = true;
 			//e.preventDefault();
-			var eve = new C_GUI.event();
-			eve.target = C_GUI.onoverElement;
+			var eve = COL.event();
+			eve.target = COL.onoverElement;
 			eve.button = e.button;
-			C_GUI.tosign.click = true;
+			COL.tosign.click = true;
 			switch (eve.button) {
 			case 0:
-				C_GUI.tosign.click = C_GUI.mouseleft = true;
+				COL.tosign.click = COL.mouseleft = true;
 				break;
 			case 1:
-				C_GUI.tosign.centerclick = C_GUI.mousecenter = true;
+				COL.tosign.centerclick = COL.mousecenter = true;
 				break;
 			case 2:
-				C_GUI.tosign.rightclick = C_GUI.mouseright = true;
+				COL.tosign.rightclick = COL.mouseright = true;
 				break;
 			}
-			if (C_GUI.onoverElement && C_GUI.onoverElement.mousedown) {
-				if (C_GUI.onoverElement.mousedown) {
-					C_GUI.onoverElement.mousedown(eve);
+			if (COL.onoverElement) {
+				COL.onoverElement.fireEvent("mousedown", eve);
+				if (COL.onoverElement.eventable) {
+					COL.focus = COL.onoverElement;
 				}
-				C_GUI.focus = C_GUI.onoverElement;
+
 			}
 		});
-		aEL(document, "mousedown",
+		aEL(canvas_dom, "mouseup",
 		function(e) {
-			if (e.target != C_GUI.canvas) {
-				C_GUI.canvasonfocus = false;
+			var eve = COL.event();
+			eve.target = COL.onoverElement;
+			eve.button = e.button;
+			switch (eve.button) {
+			case 0:
+				COL.mouseleft = false;
+				if (COL.tosign.click && eve.target) {
+					eve.target.fireEvent("click", eve);
+				}
+				break;
+			case 1:
+				COL.mousecenter = false;
+				if (COL.tosign.centerclick && eve.target) {
+					eve.target.fireEvent("centerclick", eve);
+				}
+				break;
+			case 2:
+				COL.mouseright = false;
+				if (COL.tosign.rightclick && eve.target) {
+					eve.target.fireEvent("rightclick", eve);
+				}
+				break;
+			}
+			if (COL.onoverElement) {
+				COL.onoverElement.fireEvent("mouseup", eve);
 			}
 		});
 		aEL(canvas_dom, "mouseout",
 		function() {
-			C_GUI.e.mouseoutcanvas();
+			COL.e.mouseoutcanvas();
 		});
+		aEL(document, "mousedown",
+		function(e) {
+			if (e.target != COL.canvas) {
+				COL.canvasonfocus = false;
+			}
+		});
+
 		/*aEL(canvas_dom, "contextmenu",
 		function(e) {
 			e.preventDefault();
@@ -207,91 +234,61 @@ function newC_GUI() {
 		});
 		aEL(window, "mouseout",
 		function() {
-			C_GUI.e.mouseoutcanvas();
+			COL.e.mouseoutcanvas();
 		});
 
 		aEL(canvas_dom, "resize",
 		function() {
-			C_GUI.document.width = canvas_dom.width = C_GUI.width = canvas_dom.offsetWidth;
-			C_GUI.document.height = canvas_dom.height = C_GUI.height = canvas_dom.offsetHeight;
-			if (C_GUI.buffercanvas) {
-				C_GUI.buffercanvas.width = canvas_dom.offsetWidth;
-				C_GUI.buffercanvas.height = canvas_dom.offsetHeight;
+			COL.document.width = canvas_dom.width = COL.width = canvas_dom.offsetWidth;
+			COL.document.height = canvas_dom.height = COL.height = canvas_dom.offsetHeight;
+			if (COL.buffercanvas) {
+				COL.buffercanvas.width = canvas_dom.offsetWidth;
+				COL.buffercanvas.height = canvas_dom.offsetHeight;
 			}
-			//C_GUI.setPosition();
 		});
 
-		aEL(canvas_dom, "mouseup",
-		function(e) {
-			var eve = new C_GUI.event();
-			eve.target = C_GUI.onoverElement;
-			eve.button = e.button;
-			switch (eve.button) {
-			case 0:
-				C_GUI.mouseleft = false;
-				if (C_GUI.tosign.click && eve.target && eve.target.click) {
-					eve.target.click(eve);
-				}
-				break;
-			case 1:
-				C_GUI.mousecenter = false;
-				if (C_GUI.tosign.centerclick && eve.target && eve.target.centerclick) {
-					eve.target.centerclick(eve);
-				}
-				break;
-			case 2:
-				C_GUI.mouseright = false;
-				if (C_GUI.tosign.rightclick && eve.target && eve.target.rightclick) {
-					eve.target.rightclick(eve);
-				}
-				break;
-			}
-			if (C_GUI.onoverElement && C_GUI.onoverElement.mouseup) {
-				C_GUI.onoverElement.mouseup(eve);
-			}
-		});
-		var _mousewheele = (C_GUI.tools.getBrowser() == "firefox") ? "DOMMouseScroll": "mousewheel";
+		var _mousewheele = (COL.tools.getBrowser() == "firefox") ? "DOMMouseScroll": "mousewheel";
 		aEL(canvas_dom, _mousewheele,
 		function(e) {
 			e = e || window.event;
-			var eve = new C_GUI.event();
-			eve.target = C_GUI.onoverElement;
+			var eve = COL.event();
+			eve.target = COL.onoverElement;
 			var data = e.wheelDelta ? e.wheelDelta: e.detail;
 			if (data == -3 || data == 120) {
 				eve.wheel = 0;
 			} else if (data == 3 || data == -120) {
 				eve.wheel = 1;
 			}
-			if (C_GUI.onoverElement && C_GUI.onoverElement.mousewheel) {
-				C_GUI.onoverElement.mousewheel(eve);
+			if (COL.onoverElement) {
+				COL.onoverElement.fireEvent("mousewheel", eve);
 			}
 
 		});
 
 		aEL(window, "keydown",
 		function(e) {
-			if (C_GUI.canvasonfocus) {
+			if (COL.canvasonfocus) {
 
-				if (!C_GUI.keys[e.keyCode]) {
+				if (!COL.keys[e.keyCode]) {
 					//e.preventDefault();
-					var eve = new C_GUI.event();
+					var eve = COL.event();
 					eve.keyCode = e.keyCode;
-					C_GUI.keys[e.keyCode] = true;
-					if (C_GUI.focus && C_GUI.focus.keydown) {
-						C_GUI.focus.keydown(eve);
+					COL.keys[e.keyCode] = true;
+					if (COL.focus) {
+						COL.focus.fireEvent("keydown", eve);
 					}
 				}
 			}
 		});
 		aEL(window, "keyup",
 		function(e) {
-			if (C_GUI.canvasonfocus) {
-				if (C_GUI.keys[e.keyCode]) {
-					var eve = new C_GUI.event();
+			if (COL.canvasonfocus) {
+				if (COL.keys[e.keyCode]) {
+					var eve = COL.event();
 					eve.keyCode = e.keyCode;
-					C_GUI.keys[e.keyCode] = false;
-					if (C_GUI.focus && C_GUI.focus.keyup) {
-						C_GUI.focus.keyup(eve);
+					COL.keys[e.keyCode] = false;
+					if (COL.focus) {
+						COL.focus.fireEvent("keyup", eve);
 					}
 				}
 				// e.preventDefault();
@@ -299,39 +296,40 @@ function newC_GUI() {
 		});
 		aEL(window, "keypress",
 		function(e) {
-			if (C_GUI.canvasonfocus) {
-				var eve = new C_GUI.event();
+			if (COL.canvasonfocus) {
+				var eve = COL.event();
 				eve.keyCode = e.keyCode;
-				C_GUI.keys[e.keyCode] = false;
-				if (C_GUI.focus && C_GUI.focus.keypress) {
-					C_GUI.focus.keypress(eve);
+				COL.keys[e.keyCode] = false;
+				if (COL.focus) {
+					COL.focus.fireEvent("keypress", eve);
 				}
 				// e.preventDefault();
 			}
 		});
-		C_GUI.context = canvas_dom.getContext("2d");
-		C_GUI.currentcontext = C_GUI.buffercontext || C_GUI.context;
-		C_GUI.cct = C_GUI.currentcontext;
-		C_GUI.document = C_GUI.Graph.New();
-		C_GUI.Graph.Eventable(C_GUI.document);
-		C_GUI.document.drawtype = "image";
-		C_GUI.document.name = "document";
-		C_GUI.document.width = canvas_dom.width;
-		C_GUI.document.height = canvas_dom.height;
-		C_GUI.drawlist = [C_GUI.document];
+		COL.context = canvas_dom.getContext("2d");
+		COL.currentcontext = COL.buffercontext || COL.context;
+		COL.cct = COL.currentcontext;
+		COL.document = COL.Graph.New();
+		COL.Graph.Eventable(COL.document);
+		COL.document.drawtype = "image";
+		COL.document.name = "document";
+		COL.document.width = canvas_dom.width;
+		COL.document.height = canvas_dom.height;
+		COL.drawlist = [COL.document];
 	};
 
-	C_GUI.setBuffCanvas = function(buf) {
-		C_GUI.buffercanvas = buf;
-		C_GUI.buffercontext = C_GUI.buffercanvas.getContext("2d");
-		C_GUI.currentcontext = C_GUI.buffercontext || C_GUI.context;
+	COL.setBuffCanvas = function(buf) {
+		COL.buffercanvas = buf;
+		COL.buffercontext = COL.buffercanvas.getContext("2d");
+		COL.currentcontext = COL.buffercontext || COL.context;
 	};
 
-	C_GUI.Graph = {
+	COL.Graph = {
 		New: function(opjson) {
+			var cF = COL.Graph.commonFunction;
 			var g = {
-				name:null,
-				GraphID: C_GUI.generateGraphID(),
+				name: null,
+				GraphID: COL.generateGraphID(),
 				y: 0,
 				x: 0,
 				width: 1,
@@ -366,132 +364,20 @@ function newC_GUI() {
 				drawlist: [],
 				childNode: [],
 				parentNode: null,
-				set: function(json) {
-					if (json) {
-						for (var ob in json) {
-							g[ob] = json[ob];
-						}
-					}
-				},
-				drawpic: function(width, height, _draw) {
-					this.width = width;
-					this.height = height;
-					this.imageobj = C_GUI.imagecreater.drawpic(width, height, _draw);
-				},
-				setZoom: function(x, y) {
-					if (arguments.length == 1) this.zoom.x = this.zoom.y = x;
-					else if (arguments.length == 2) {
-						this.zoom.x = x;
-						this.zoom.y = y;
-					}
-				},
-				useImage: function(image) {
-					if (!this.imageobj) {
-						this.imageobj = document.createElement("canvas");
-					}
-					var _this = this;
-					function set() {
-						_this.width = _this.imageobj.width = image.width;
-						_this.height = _this.imageobj.height = image.height;
-						_this.imageobj.getContext("2d").drawImage(image, 0, 0);
-					}
-					if (!image.complete) {
-						image.onload = function() {
-							set();
-						};
-					}
-					try {
-						set();
-					} catch(e) {
-						console.log(e);
-					}
-
-				},
-				borderPathFun: function(ct) {
-					ct.rect(0, 0, this.width, this.height);
-				},
-				zindex: function(index) {
-					this.z_index = index;
-					if (this.parentNode) {
-						C_GUI.tools.arraybyZ_index(this.parentNode);
-					}
-				},
-				setRotateCenter: function() {
-					if (arguments.length == 2) {
-						this.rotatecenter.x = arguments[0];
-						this.rotatecenter.y = arguments[1];
-					} else if (arguments.length == 1) {
-						switch (arguments[0]) {
-						case "center":
-							{
-								this.rotatecenter.x = this.width / 2;
-								this.rotatecenter.y = this.height / 2;
-								break;
-							}
-						}
-					}
-				},
-				setPositionPoint: function() {
-					if (arguments.length == 2) {
-						this.positionpoint.x = arguments[0];
-						this.positionpoint.y = arguments[1];
-					} else if (arguments.length == 1) {
-						switch (arguments[0]) {
-						case "center":
-							{
-								this.positionpoint.x = this.width / 2;
-								this.positionpoint.y = this.height / 2;
-								break;
-							}
-						}
-					}
-				},
-				setSize: function(w, h) {
-					this.width = w;
-					this.height = h;
-
-				},
-				New: function() {
-					var newobj = Object.create(this);
-					newobj.parentNode = null;
-					newobj.childNode = [];
-					newobj.drawlist = [];
-					return newobj;
-				},
-				clone: function() {
-					var newobj = Object.create(this);
-					return newobj;
-				},
-				addChild: function(graph) {
-					if (graph.GraphID) {
-						//console.log(graph.GraphID)
-						//this.childNode.unshift(graph);
-						this.childNode[graph.GraphID] = graph;
-						//this.childNode.pop(graph);
-						graph.parentNode = this;
-						if (this.needsort) {
-							C_GUI.tools.arraybyZ_index(this);
-						} else {
-							this.drawlist.unshift(graph);
-						}
-					}
-				},
-				removeChild: function(graph) {
-					if (this.childNode[graph.GraphID]) {
-						//this.childNode[graph.GraphID] = null;
-						graph.parentNode = null;
-						delete this.childNode[graph.GraphID];
-						var ind = 0;
-						for (var ele in this.drawlist) {
-							if (this.drawlist[ele].GraphID == graph.GraphID) {
-								this.drawlist.splice(ind, 1);
-								break;
-							}
-							ind++;
-						}
-
-					}
-				}
+				set: cF.set,
+				drawpic: cF.drawpic,
+				setZoom: cF.setZoom,
+				useImage: cF.useImage,
+				borderPathFun: cF.borderPathFun,
+				zindex: cF.zindex,
+				setRotateCenter: cF.setRotateCenter,
+				setPositionPoint: cF.setPositionPoint,
+				setSize: cF.setSize,
+				New: cF.New,
+				clone: cF.clone,
+				addChild: cF.addChild,
+				removeChild: cF.removeChild,
+				fireEvent: COL.Graph.commonFunction.Event.fireEvent
 			};
 			if (opjson) {
 				for (var ob in opjson) {
@@ -501,13 +387,13 @@ function newC_GUI() {
 			return g;
 		},
 		NewImageObj: function(image) {
-			var m = C_GUI.Graph.New();
+			var m = COL.Graph.New();
 			if (image) {
 				m.userImage(image);
 			}
 		},
 		NewTextObj: function(text, fontsize, opjson) {
-			var t = C_GUI.Graph.New();
+			var t = COL.Graph.New();
 			t.drawtype = "text";
 			t.realtimeVary = false;
 			t.text = text || " ";
@@ -542,173 +428,335 @@ function newC_GUI() {
 					t[ob] = opjson[ob];
 				}
 			}
-			t.vary = function(ct) {
-				//ct.translate(0, this.imageobj.height / 2);
-				ct.beginPath();
-				ct.textBaseline = this.baseline;
-				ct.lineWidth = this.textborderWidth;
-				ct.strokeStyle = this.textborderColor;
-				ct.fillStyle = this.color || C_GUI.font.color || "#000";
-				//ct.save();
-				if (this.shadowBlur > 0) {
-					ct.font = this.font;
-					ct.shadowBlur = this.shadowBlur;
-					ct.shadowColor = this.shadowColor;
-					ct.shadowOffsetX = this.shadowOffset.x;
-					ct.shadowOffsetY = this.shadowOffset.y;
-				}
-				ct.font = this.font;
-				if(this.linedirection===0){
-					ct.translate(0, this.lineHeight / 2);
-					if(t.columndirection===0){
-						for (var i = 0; i < this.varylist.length; i++) {
-							if (this.fill) {
-								ct.fillText(this.varylist[i], this.innerX, this.innerY);
-							}
-							if (this.textborderWidth) {
-								ct.strokeText(this.varylist[i], this.innerX, this.innerY);
-							}
-							ct.translate(0, this.lineHeight);
-						}
-					}else if(t.columndirection==1){
-						for (var i = this.varylist.length-1; i >0; i--) {
-							if (this.fill) {
-								ct.fillText(this.varylist[i], this.innerX, this.innerY);
-							}
-							if (this.textborderWidth) {
-								ct.strokeText(this.varylist[i], this.innerX, this.innerY);
-							}
-							ct.translate(0, this.lineHeight);
-						}
-					}
-				}else if(this.linedirection==1){
-					if(t.columndirection===0){
-						for (var i = 0; i < this.varylist.length; i++) {
-							ct.save();
-							ct.translate(i*this.lineHeight,this.fontSize/2);
-							var thisline=this.varylist[i].split("");
-							for(var im=0;im<thisline.length;im++){
-								ct.save();
-								ct.translate(this.lineHeight-ct.measureText(thisline[im]).width,0);
-								if (this.fill) {
-									ct.fillText(thisline[im], this.innerX, this.innerY);
-								}
-								if (this.textborderWidth) {
-									ct.strokeText(thisline[im], this.innerX, this.innerY);
-								}
-								ct.restore();
-								ct.translate(0, this.fontSize);
-							}
-							ct.restore();
-						}
-					}else if(t.columndirection==1){
-						for (var i =this.varylist.length-1; i>0; i--) {
-							ct.save();
-							ct.translate((this.varylist.length-1-i)*this.lineHeight,this.fontSize/2);
-							var thisline=this.varylist[i].split("");
-							for(var im=0;im<thisline.length;im++){
-								ct.save();
-								ct.translate(this.lineHeight-ct.measureText(thisline[im]).width,0);
-								if (this.fill) {
-									ct.fillText(thisline[im], this.innerX, this.innerY);
-								}
-								if (this.textborderWidth) {
-									ct.strokeText(thisline[im], this.innerX, this.innerY);
-								}
-								ct.restore();
-								ct.translate(0, this.fontSize);
-							}
-							ct.restore();
-						}
-					}
-				}
-			}
-			t.prepareText = function() {
-				if (!t.imageobj) {
-					t.imageobj = document.createElement("canvas");
-				}
-				var ct = t.imageobj.getContext("2d");
-				ct.clearRect(0, 0, t.imageobj.width, t.imageobj.height);
-				t.varylist = t.text.split(/\n/g);
-				var font = "";
-				if (t.fontStyle || C_GUI.font.fontStyle) font += t.fontStyle || C_GUI.font.fontStyle;
-				if (t.fontVariant || C_GUI.font.fontVariant) font += (" " + (t.fontVariant || C_GUI.font.fontVariant));
-				if (t.fontWeight || C_GUI.font.fontWeight) font += (" " + (t.fontWeight || C_GUI.font.fontWeight));
-				font += (" " + (t.fontSize || C_GUI.font.fontSize) || 15) + "px";
-				/*if (t.lineHeight || C_GUI.font.lineHeight) font += (" " + (t.lineHeight || C_GUI.font.lineHeight));*/
-				if (t.fontFamily || C_GUI.font.fontFamily) font += (" " + (t.fontFamily || C_GUI.font.fontFamily));
-				else {
-					font += (" " + C_GUI.fontFamily);
-				}
-
-				t.font = font;
-				ct.font = font;
-				if (t.autoSize) {
-					var w = 0,
-					tw;
-					if (this.linedirection === 0) {
-						for (var i = 0; i < t.varylist.length; i++) {
-							tw = ct.measureText(t.varylist[i]).width;
-							w = tw > w ? tw: w;
-						}
-						t.width = t.imageobj.width = (t.maxWidth >= w) ? t.maxWidth: w;
-						t.height = t.imageobj.height = t.varylist.length * t.lineHeight;
-					}else if(this.linedirection==1){
-						for (var i = 0; i < t.varylist.length; i++) {
-							tw =t.varylist[i].split("").length;
-							w = tw > w ? tw: w;
-						}
-						w*= t.fontSize;
-						t.width = t.imageobj.width = t.varylist.length * t.lineHeight;
-						t.height = t.imageobj.height =(t.maxWidth >= w) ? t.maxWidth: w ;
-					}
-
-				} else {
-					t.imageobj.width = t.width || 100;
-					t.imageobj.height = t.height || 30;
-				}
-				t.vary(ct);
-				//ct.restore();
-			};
-			t.setSize = function(width, height) {
-				t.autoSize = false;
-				t.width = width;
-				t.height = height;
-				t.prepareText();
-			};
-			t.setText = function(text) {
-				t.text = text || " ";
-				t.prepareText();
-			};
+			t.vary = COL.Graph.commonFunction.t.vary;
+			t.prepareText = COL.Graph.commonFunction.t.prepareText;
+			t.setSize = COL.Graph.commonFunction.t.setSize;
+			t.setText = COL.Graph.commonFunction.t.setText;
 			t.prepareText();
 			return t;
 		},
 		Eventable: function(graph) {
 			graph.eventable = true;
 			graph.overPath = null;
-			graph.events = [];
-			for (var inde = 0; inde < C_GUI.commonevents.length; inde++) {
-				graph.events["on" + C_GUI.commonevents[inde]] = [];
-				graph[C_GUI.commonevents[inde]] = eval('(function(e){for(var i=graph.events["on' + C_GUI.commonevents[inde] + '"].length;i--;){if(typeof(graph.events["on' + C_GUI.commonevents[inde] + '"][i])=="function")graph.events["on' + C_GUI.commonevents[inde] + '"][i](e)}if(e.Propagation){if(graph.parentNode){for(var i=graph.parentNode.events["on' + C_GUI.commonevents[inde] + '"].length;i--;){if(typeof(graph.parentNode.events["on' + C_GUI.commonevents[inde] + '"][i])=="function")graph.parentNode.events["on' + C_GUI.commonevents[inde] + '"][i](e)}}}})');
-			}
-			graph.addEvent = function(name, fun) {
-				if (!graph.events[name]) graph.events[name] = [];
-				if (typeof(fun) == "function" && graph.events[name]) {
-					var i = C_GUI.tools.findEmptyPlace(graph.events[name]);
-					graph.events[name][i] = fun;
-					var ev = {
-						ename: name,
-						index: i
-					};
-					return ev;
-				} else {
-					return false;
+			graph.events = {};
+			graph.addEvent = COL.Graph.commonFunction.Event.addEvent;
+			graph.removeEvent = COL.Graph.commonFunction.Event.removeEvent;
+		},
+		commonFunction: {
+			set: function(json) {
+				if (json) {
+					for (var ob in json) {
+						this[ob] = json[ob];
+					}
 				}
-			};
-			graph.removeEvent = function(ev) {
-				graph.events[ev.ename][ev.index] = null;
-				ev = null;
-			};
+			},
+			drawpic: function(width, height, _draw) {
+				this.width = width;
+				this.height = height;
+				this.imageobj = COL.imagecreater.drawpic(width, height, _draw);
+			},
+			setZoom: function(x, y) {
+				if (arguments.length == 1) this.zoom.x = this.zoom.y = x;
+				else if (arguments.length == 2) {
+					this.zoom.x = x;
+					this.zoom.y = y;
+				}
+			},
+			useImage: function(image) {
+				if (!this.imageobj) {
+					this.imageobj = document.createElement("canvas");
+				}
+				var _this = this;
+				function set() {
+					_this.width = _this.imageobj.width = image.width;
+					_this.height = _this.imageobj.height = image.height;
+					_this.imageobj.getContext("2d").drawImage(image, 0, 0);
+				}
+				if (!image.complete) {
+					image.onload = function() {
+						set();
+					};
+				}
+				try {
+					set();
+				} catch(e) {
+					console.log(e);
+				}
+
+			},
+			borderPathFun: function(ct) {
+				ct.rect(0, 0, this.width, this.height);
+			},
+			zindex: function(index) {
+				this.z_index = index;
+				if (this.parentNode) {
+					COL.tools.arraybyZ_index(this.parentNode);
+				}
+			},
+			setRotateCenter: function() {
+				if (arguments.length == 2) {
+					this.rotatecenter.x = arguments[0];
+					this.rotatecenter.y = arguments[1];
+				} else if (arguments.length == 1) {
+					switch (arguments[0]) {
+					case "center":
+						{
+							this.rotatecenter.x = this.width / 2;
+							this.rotatecenter.y = this.height / 2;
+							break;
+						}
+					}
+				}
+			},
+			setPositionPoint: function() {
+				if (arguments.length == 2) {
+					this.positionpoint.x = arguments[0];
+					this.positionpoint.y = arguments[1];
+				} else if (arguments.length == 1) {
+					switch (arguments[0]) {
+					case "center":
+						{
+							this.positionpoint.x = this.width / 2;
+							this.positionpoint.y = this.height / 2;
+							break;
+						}
+					}
+				}
+			},
+			setSize: function(w, h) {
+				this.width = w;
+				this.height = h;
+
+			},
+			New: function() {
+				var newobj = Object.create(this);
+				newobj.parentNode = null;
+				newobj.childNode = [];
+				newobj.drawlist = [];
+				return newobj;
+			},
+			clone: function() {
+				var newobj = Object.create(this);
+				return newobj;
+			},
+			addChild: function(graph) {
+				if (graph.GraphID) {
+					//console.log(graph.GraphID)
+					//this.childNode.push(graph);
+					this.childNode[graph.GraphID] = graph;
+					//this.childNode.pop(graph);
+					graph.parentNode = this;
+					if (this.needsort) {
+						COL.tools.arraybyZ_index(this);
+					} else {
+						this.drawlist.unshift(graph);
+					}
+				}
+			},
+			removeChild: function(graph) {
+				if (this.childNode[graph.GraphID]) {
+					//this.childNode[graph.GraphID] = null;
+					graph.parentNode = null;
+					delete this.childNode[graph.GraphID];
+					var ind = 0;
+					for (var ele in this.drawlist) {
+						if (this.drawlist[ele].GraphID == graph.GraphID) {
+							this.drawlist.splice(ind, 1);
+							break;
+						}
+						ind++;
+					}
+				}
+			},
+			t: {
+				vary: function(ct) {
+					ct.beginPath();
+					ct.textBaseline = this.baseline;
+					ct.lineWidth = this.textborderWidth;
+					ct.strokeStyle = this.textborderColor;
+					ct.fillStyle = this.color || COL.font.color || "#000";
+					//ct.save();
+					if (this.shadowBlur > 0) {
+						ct.font = this.font;
+						ct.shadowBlur = this.shadowBlur;
+						ct.shadowColor = this.shadowColor;
+						ct.shadowOffsetX = this.shadowOffset.x;
+						ct.shadowOffsetY = this.shadowOffset.y;
+					}
+					ct.font = this.font;
+					if (this.linedirection === 0) {
+						ct.translate(0, this.lineHeight / 2);
+						if (this.columndirection === 0) {
+							for (var i = 0; i < this.varylist.length; i++) {
+								if (this.fill) {
+									ct.fillText(this.varylist[i], this.innerX, this.innerY);
+								}
+								if (this.textborderWidth) {
+									ct.strokeText(this.varylist[i], this.innerX, this.innerY);
+								}
+								ct.translate(0, this.lineHeight);
+							}
+						} else if (this.columndirection == 1) {
+							for (var i = this.varylist.length - 1; i > 0; i--) {
+								if (this.fill) {
+									ct.fillText(this.varylist[i], this.innerX, this.innerY);
+								}
+								if (this.textborderWidth) {
+									ct.strokeText(this.varylist[i], this.innerX, this.innerY);
+								}
+								ct.translate(0, this.lineHeight);
+							}
+						}
+					} else if (this.linedirection == 1) {
+						if (this.columndirection === 0) {
+							for (var i = 0; i < this.varylist.length; i++) {
+								ct.save();
+								ct.translate(i * this.lineHeight, this.fontSize / 2);
+								var thisline = this.varylist[i].split("");
+								for (var im = 0; im < thisline.length; im++) {
+									ct.save();
+									ct.translate(this.lineHeight - ct.measureText(thisline[im]).width, 0);
+									if (this.fill) {
+										ct.fillText(thisline[im], this.innerX, this.innerY);
+									}
+									if (this.textborderWidth) {
+										ct.strokeText(thisline[im], this.innerX, this.innerY);
+									}
+									ct.restore();
+									ct.translate(0, this.fontSize);
+								}
+								ct.restore();
+							}
+						} else if (this.columndirection == 1) {
+							for (var i = this.varylist.length - 1; i > 0; i--) {
+								ct.save();
+								ct.translate((this.varylist.length - 1 - i) * this.lineHeight, this.fontSize / 2);
+								var thisline = this.varylist[i].split("");
+								for (var im = 0; im < thisline.length; im++) {
+									ct.save();
+									ct.translate(this.lineHeight - ct.measureText(thisline[im]).width, 0);
+									if (this.fill) {
+										ct.fillText(thisline[im], this.innerX, this.innerY);
+									}
+									if (this.textborderWidth) {
+										ct.strokeText(thisline[im], this.innerX, this.innerY);
+									}
+									ct.restore();
+									ct.translate(0, this.fontSize);
+								}
+								ct.restore();
+							}
+						}
+					}
+				},
+				prepareText: function() {
+					if ((!this.imageobj)||(!this.imageobj.getContext)) {
+						this.imageobj= document.createElement("canvas");
+					}var imgobj=this.imageobj;
+					var ct = imgobj.getContext("2d");
+					ct.clearRect(0, 0, imgobj.width, imgobj.height);
+					this.varylist = this.text.split(/\n/g);
+					var font = "";
+					if (this.fontStyle || COL.font.fontStyle) font += this.fontStyle || COL.font.fontStyle;
+					if (this.fontVariant || COL.font.fontVariant) font += (" " + (this.fontVariant || COL.font.fontVariant));
+					if (this.fontWeight || COL.font.fontWeight) font += (" " + (this.fontWeight || COL.font.fontWeight));
+					font += (" " + (this.fontSize || COL.font.fontSize) || 15) + "px";
+					if (this.fontFamily || COL.font.fontFamily) font += (" " + (this.fontFamily || COL.font.fontFamily));
+					else {
+						font += (" " + COL.fontFamily);
+					}
+
+					this.font = font;
+					ct.font = font;
+					if (this.autoSize) {
+						var w = 0,
+						tw;
+						if (this.linedirection === 0) {
+							for (var i = 0; i < this.varylist.length; i++) {
+								tw = ct.measureText(this.varylist[i]).width;
+								w = tw > w ? tw: w;
+							}
+							this.width = imgobj.width = (this.maxWidth >= w) ? this.maxWidth: w;
+							this.height = imgobj.height = this.varylist.length * this.lineHeight;
+						} else if (this.linedirection == 1) {
+							for (var i = 0; i < this.varylist.length; i++) {
+								tw = this.varylist[i].split("").length;
+								w = tw > w ? tw: w;
+							}
+							w *= this.fontSize;
+							this.width = imgobj.width = this.varylist.length * this.lineHeight;
+							this.height = imgobj.height = (this.maxWidth >= w) ? this.maxWidth: w;
+						}
+
+					} else {
+						imgobj.width = (this.width >= 0) ? this.width: 100;
+						imgobj.height = (this.height >= 0) ? this.height: 30;
+					}
+					this.vary(ct);
+				},
+				setSize: function(width, height) {
+					this.autoSize = false;
+					this.width = width;
+					this.height = height;
+					this.prepareText();
+				},
+				setText: function(text) {
+					this.text = text || " ";
+					this.prepareText();
+				}
+			},
+			Event: {
+				addEvent: function(name, fun) {
+					if (typeof name == "string") name=name.replace(/^on/, "");
+					if (!this.events[name]) this.events[name] = [];
+					if (typeof(fun) == "function" && this.events[name]) {
+						this.events[name].push(fun);
+						var eid = (++COL.tmpEventID);
+						this.events[name][this.events[name].length - 1].EventID = eid;
+						var ev = {
+							ename: name,
+							EventID: eid
+						};
+						return ev;
+					} else {
+						return false;
+					}
+				},
+				removeEvent: function(ev) {
+					if (typeof ev.ename == "string") ev.ename.replace(/^on/, "");
+					if (this.events && this.events[ev.ename]) {
+						var earr = this.events[ev.ename];
+								var middleindex, starti = 0,
+								endi = earr.length - 1,evid=ev.EventID;
+								while (endi - starti) { //当前后定位不重合
+									middleindex = Math.floor((starti + endi) / 2);
+									if (earr[middleindex].EventID == evid) {
+										earr.splice(middleindex, 1) ;break;
+									} else if (earr[middleindex + 1].EventID >evid) {
+										endi = middleindex;
+									} else {
+										starti = middleindex + 1;
+									}
+								}
+					}
+
+				},
+				fireEvent: function(evename, eobj) {
+					var events=this.events;
+					if (events && events[evename]) {
+						for (var i = events[evename].length; i--;) {
+							if (typeof(events[evename][i]) == "function") {
+								events[evename][i](eobj);
+							}
+						}
+					}
+					if (eobj.Propagation) {
+						if (this.parentNode) {
+							this.parentNode.fireEvent(evename, eobj);
+						}
+					}
+				}
+			}
 		},
 		Delete: function(graph) {
 			if (graph) {
@@ -721,68 +769,70 @@ function newC_GUI() {
 		}
 	};
 
-	C_GUI.drawElement = function(d, ct) {
+	COL.drawElement = function(d, ct) {
+		var currentObj;
 		for (var i = 0; i < d.length; i++) {
 			if (d[i].display) {
+				cObj = d[i];
 				ct.save();
-				ct.translate(d[i].x + d[i].rotatecenter.x - d[i].positionpoint.x, d[i].y + d[i].rotatecenter.y - d[i].positionpoint.y);
+				ct.translate(cObj.x + cObj.rotatecenter.x - cObj.positionpoint.x, cObj.y + cObj.rotatecenter.y - cObj.positionpoint.y);
 				ct.beginPath();
-				ct.rotate(d[i].rotate * 0.017453);
-				ct.scale(d[i].zoom.x, d[i].zoom.y);
-				if (d[i].opacity !== null) ct.globalAlpha = d[i].opacity;
-				if (d[i].overflow == "hidden") {
+				ct.rotate(cObj.rotate * 0.017453);
+				ct.scale(cObj.zoom.x, cObj.zoom.y);
+				if (cObj.opacity !== null) ct.globalAlpha = cObj.opacity;
+				if (cObj.overflow == "hidden") {
 					ct.beginPath();
-					switch (d[i].clipBy) {
+					switch (cObj.clipBy) {
 					case "border":
 						{
-							d[i].borderPathFun ? d[i].borderPathFun(ct) : C_GUI.tools.defaultPathFun(ct, d[i]);
+							cObj.borderPathFun ? cObj.borderPathFun(ct) : COL.tools.defaultPathFun(ct, cObj);
 							break;
 						}
 					case "drawfunction":
 						{
-							d[i].drawfunction ? d[i].drawfunction(ct) : C_GUI.tools.defaultPathFun(ct, d[i]);
+							cObj.drawfunction ? cObj.drawfunction(ct) : COL.tools.defaultPathFun(ct, cObj);
 							break;
 						}
 					default:
 						{
-							C_GUI.tools.defaultPathFun(ct, d[i]);
+							COL.tools.defaultPathFun(ct, cObj);
 						}
 					}
 					ct.clip();
 				}
 				ct.save();
-				if (d[i].Composite) ct.globalCompositeOperation = d[i].Composite;
-				if (d[i].beforedrawfun) d[i].beforedrawfun(ct);
-				if (d[i].backgroundColor) {
-					ct.fillStyle = d[i].backgroundColor;
-					ct.fillRect( - (d[i].rotatecenter.x), -(d[i].rotatecenter.y), d[i].width, d[i].height);
+				if (cObj.Composite) ct.globalCompositeOperation = cObj.Composite;
+				if (cObj.beforedrawfun) cObj.beforedrawfun(ct);
+				if (cObj.backgroundColor) {
+					ct.fillStyle = cObj.backgroundColor;
+					ct.fillRect( - (cObj.rotatecenter.x), -(cObj.rotatecenter.y), cObj.width, cObj.height);
 				}
-				switch (d[i].drawtype) {
+				switch (cObj.drawtype) {
 				case "function":
 					{
-						ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
-						if (d[i].drawfunction) d[i].drawfunction(ct);
+						ct.translate( - cObj.rotatecenter.x, -cObj.rotatecenter.y);
+						if (cObj.drawfunction) cObj.drawfunction(ct);
 						break;
 					}
 				case "image":
 					{
-						ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
-						if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
-							ct.drawImage(d[i].imageobj, 0, 0);
+						ct.translate( - cObj.rotatecenter.x, -cObj.rotatecenter.y);
+						if (cObj.imageobj && cObj.imageobj.width && cObj.imageobj.height) {
+							ct.drawImage(cObj.imageobj, 0, 0);
 						}
 
 						break;
 					}
 				case "text":
 					{
-						ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
-						if (d[i].realtimeVary) {
+						ct.translate( - cObj.rotatecenter.x, -cObj.rotatecenter.y);
+						if (cObj.realtimeVary) {
 							ct.save();
-							d[i].vary(ct);
+							cObj.vary(ct);
 							ct.restore();
 						} else {
-							if (d[i].imageobj && d[i].imageobj.width && d[i].imageobj.height) {
-								ct.drawImage(d[i].imageobj, 0, 0);
+							if (cObj.imageobj && cObj.imageobj.width && cObj.imageobj.height) {
+								ct.drawImage(cObj.imageobj, 0, 0);
 							}
 						}
 
@@ -790,18 +840,18 @@ function newC_GUI() {
 					}
 				}
 				ct.save();
-				if (d[i].eventable) {
-					if (C_GUI.mouseX) {
-						if (d[i].overPath) {
-							d[i].overPath(ct);
-						} else if (d[i].drawfunction) {
-							d[i].drawfunction(ct);
+				if (cObj.eventable) {
+					if (COL.mouseX) {
+						if (cObj.overPath) {
+							cObj.overPath(ct);
+						} else if (cObj.drawfunction) {
+							cObj.drawfunction(ct);
 						} else {
-							C_GUI.tools.defaultPathFun(ct, d[i]);
+							COL.tools.defaultPathFun(ct, cObj);
 						}
-						if (ct.isPointInPath(C_GUI.mouseX, C_GUI.mouseY)) {
-							C_GUI.newonoverElement = d[i];
-							if (C_GUI.Debug.stat) {
+						if (ct.isPointInPath(COL.mouseX, COL.mouseY)) {
+							COL.newonoverElement = cObj;
+							if (COL.Debug.stat) {
 								ct.save();
 								ct.globalCompositeOperation = "lighter";
 								ct.fillStyle = "rgba(255,255,255,0.3)";
@@ -809,26 +859,25 @@ function newC_GUI() {
 								ct.restore();
 							}
 						}
-
 					}
 				}
-				if (C_GUI.Debug.stat) {
-					C_GUI.Debug.itemcount++;
+				if (COL.Debug.stat) {
+					COL.Debug.itemcount++;
 					ct.save();
 					ct.beginPath();
-					ct.strokeRect(0, 0, d[i].width, d[i].height);
+					ct.strokeRect(0, 0, cObj.width, cObj.height);
 					//ct.stroke();
-					var zx = d[i].zoom.x,
-					zy = d[i].zoom.y;
-					if (d[i].parentNode) {
-						zx *= d[i].parentNode.zoom.x;
-						zy *= d[i].parentNode.zoom.y;
+					var zx = cObj.zoom.x,
+					zy = cObj.zoom.y;
+					if (cObj.parentNode) {
+						zx *= cObj.parentNode.zoom.x;
+						zy *= cObj.parentNode.zoom.y;
 					}
 					ct.scale(1 / zx, 1 / zy);
 					ct.textBaseline = "top";
 					ct.fillStyle = "rgba(0,0,0,1)";
 					ct.font = "20px Arial";
-					switch (d[i].drawtype) {
+					switch (cObj.drawtype) {
 					case "function":
 						{
 							ct.fillText("Function", 0, 0);
@@ -844,26 +893,26 @@ function newC_GUI() {
 						{
 							ct.fillText("Text", 0, 0);
 							ct.font = "12px Arial";
-							ct.fillText("font:" + d[i].font, 0, -12);
+							ct.fillText("font:" + cObj.font, 0, -12);
 							break;
 						}
 					}
-					if (C_GUI.Debug.eleinfo) {
+					if (COL.Debug.eleinfo) {
 						ct.font = "10px Arial";
-						ct.fillText("X:" + d[i].x + " " + "Y:" + d[i].y, 0, 21);
-						ct.fillText("rotate:" + d[i].rotate, 0, 31);
-						ct.fillText("zoom:" + d[i].zoom.x + "," + d[i].zoom.y, 0, 41);
-						ct.fillText("RotatePotint:" + d[i].rotatecenter.x + " " + d[i].rotatecenter.y, 0, 51);
-						ct.fillText("Size:" + d[i].width + "*" + d[i].height, 0, 61);
+						ct.fillText("X:" + cObj.x + " " + "Y:" + cObj.y, 0, 21);
+						ct.fillText("rotate:" + cObj.rotate, 0, 31);
+						ct.fillText("zoom:" + cObj.zoom.x + "," + cObj.zoom.y, 0, 41);
+						ct.fillText("RotatePotint:" + cObj.rotatecenter.x + " " + cObj.rotatecenter.y, 0, 51);
+						ct.fillText("Size:" + cObj.width + "*" + cObj.height, 0, 61);
 					}
 					ct.restore();
 				}
 				ct.restore();
-				if (d[i].afterdrawfun) d[i].afterdrawfun(ct);
+				if (cObj.afterdrawfun) cObj.afterdrawfun(ct);
 				ct.restore();
-				ct.translate( - d[i].rotatecenter.x, -d[i].rotatecenter.y);
-				if (d[i].childNode.length) {
-					C_GUI.drawElement(d[i].drawlist, ct);
+				ct.translate( - cObj.rotatecenter.x, -cObj.rotatecenter.y);
+				if (cObj.childNode.length) {
+					COL.drawElement(cObj.drawlist, ct);
 				}
 				ct.restore();
 			}
@@ -871,73 +920,74 @@ function newC_GUI() {
 
 	};
 
-	C_GUI.mousePosition = {
+	COL.mousePosition = {
 		fun: null,
 		offsetx: 0,
 		offsety: 0,
 		chrome: function(e) {
-			C_GUI.mouseX = e.offsetX;
-			C_GUI.mouseY = e.offsetY;
+			COL.mouseX = e.offsetX;
+			COL.mouseY = e.offsetY;
 		},
 		ie: function(e) {
-			C_GUI.mouseX = e.offsetX;
-			C_GUI.mouseY = e.offsetY;
+			COL.mouseX = e.offsetX;
+			COL.mouseY = e.offsetY;
 		},
 		firefox: function(e) {
-			C_GUI.mouseX = e.layerX;
-			C_GUI.mouseY = e.layerY;
+			COL.mouseX = e.layerX;
+			COL.mouseY = e.layerY;
 		}
 	};
 
 	/*把队列中的图形按index绘制出来*/
 	/*draw all graphs whose [display=true]*/
 	// var cct;
-	C_GUI.draw = function() {
-		C_GUI.newonoverElement = null;
-		var cct = C_GUI.cct;
-		if (C_GUI.Debug.stat) {
-			C_GUI.Debug.itemcount = 0;
+	COL.draw = function() {
+		COL.newonoverElement = null;
+		var cct = COL.cct;
+		if (COL.Debug.stat) {
+			COL.Debug.itemcount = 0;
 		}
-		if (C_GUI.autoClear) {
-			cct.clearRect(0, 0, C_GUI.canvas.width, C_GUI.canvas.height);
-			if (C_GUI.buffercontext) C_GUI.buffercontext.clearRect(0, 0, C_GUI.document.width, C_GUI.document.height);
+		if (COL.autoClear) {
+			cct.clearRect(0, 0, COL.canvas.width, COL.canvas.height);
+			if (COL.buffercontext) COL.buffercontext.clearRect(0, 0, COL.document.width, COL.document.height);
 		}
-		C_GUI.drawElement(C_GUI.drawlist, C_GUI.currentcontext);
-		if (C_GUI.Debug.stat) {
+		COL.drawElement(COL.drawlist, COL.currentcontext);
+		if (COL.Debug.stat) {
 			cct.save();
 			cct.setTransform(1, 0, 0, 1, 0, 0);
 			cct.font = "16px Arial";
 			cct.textBaseline = "bottom";
 			cct.globalCompositeOperation = "lighter";
 			cct.fillStyle = "red";
-			cct.fillText("mouseX:" + C_GUI.mouseX + " Y:" + C_GUI.mouseY + " mouseL:" + C_GUI.mouseleft + " C:" + C_GUI.mousecenter + " R:" + C_GUI.mouseright + " FPS:" + C_GUI.fps.v + " Items:" + C_GUI.Debug.itemcount, 0, C_GUI.canvas.height);
+			cct.fillText("mouseX:" + COL.mouseX + " Y:" + COL.mouseY + " mouseL:" + COL.mouseleft + " C:" + COL.mousecenter + " R:" + COL.mouseright + " FPS:" + COL.fps.v + " Items:" + COL.Debug.itemcount, 0, COL.canvas.height);
+			cct.fillText("onmouseoverGraphID:" + (COL.onoverElement ? COL.onoverElement.GraphID: "null") + " onfocusGraphID:" + (COL.focus ? COL.focus.GraphID: "null"), 0, COL.canvas.height - 20);
 			cct.strokeStyle = "red";
 			cct.globalCompositeOperation = "source-over";
-			cct.moveTo(C_GUI.mouseX, C_GUI.mouseY + 6);
-			cct.lineTo(C_GUI.mouseX, C_GUI.mouseY - 6);
-			cct.moveTo(C_GUI.mouseX - 6, C_GUI.mouseY);
-			cct.lineTo(C_GUI.mouseX + 6, C_GUI.mouseY);
+			cct.moveTo(COL.mouseX, COL.mouseY + 6);
+			cct.lineTo(COL.mouseX, COL.mouseY - 6);
+			cct.moveTo(COL.mouseX - 6, COL.mouseY);
+			cct.lineTo(COL.mouseX + 6, COL.mouseY);
 			cct.stroke();
 			cct.restore();
-			C_GUI.fps.c++;
+			COL.fps.c++;
 		}
-		if (C_GUI.newonoverElement != C_GUI.onoverElement) {
-			if (C_GUI.onoverElement && C_GUI.onoverElement.mouseout) {
-				var eve = new C_GUI.event();
-				eve.target = C_GUI.onoverElement;
-				C_GUI.onoverElement.mouseout(eve);
-				C_GUI.tosign.click = C_GUI.tosign.centerclick = C_GUI.tosign.rightcilck = false;
+		if (COL.newonoverElement != COL.onoverElement) {
+			if (COL.onoverElement) {
+				var eve = COL.event();
+				eve.target = COL.onoverElement;
+				COL.onoverElement.fireEvent("mouseout", eve);
+				COL.tosign.click = COL.tosign.centerclick = COL.tosign.rightcilck = false;
 			}
-			C_GUI.onoverElement = C_GUI.newonoverElement;
-			if (C_GUI.onoverElement && C_GUI.onoverElement.mouseover) {
-				var eve = new C_GUI.event();
-				eve.target = C_GUI.onoverElement;
-				C_GUI.onoverElement.mouseover(eve);
+			COL.onoverElement = COL.newonoverElement;
+			if (COL.onoverElement) {
+				var eve = COL.event();
+				eve.target = COL.onoverElement;
+				COL.onoverElement.fireEvent("mouseover", eve);
 			}
 		}
 	};
 
-	C_GUI.tools = {
+	COL.tools = {
 		getnum: function(string) { //提取字符串里首次出现的数字串
 			if (!string) return 0;
 			else {
@@ -954,7 +1004,7 @@ function newC_GUI() {
 		Linear: {
 			go: function(start, end, time, func, _hz) {
 				if (!window.linear) window.linear = [];
-				var ind = C_GUI.tools.findEmptyPlace(window.linear);
+				var ind = COL.tools.findEmptyPlace(window.linear);
 				var linear = window.linear[ind] = {};
 				linear.start = start;
 				linear.end = end;
@@ -1028,20 +1078,20 @@ function newC_GUI() {
 		arraybyZ_index: function(graph) { //让图形的子元素排序
 			if (graph.childNode) {
 				graph.drawlist = graph.childNode.slice(0);
-				graph.drawlist.sort(C_GUI.tools.paixurule);
+				graph.drawlist.sort(COL.tools.paixurule);
 				for (var i = 0; graph.drawlist[i]; i++) {}
 				graph.drawlist.length = i;
 			}
-			//if (graph.childNode) graph.drawlist = graph.childNode.sort(C_GUI.tools.paixurule);
+			//if (graph.childNode) graph.drawlist = graph.childNode.sort(COL.tools.paixurule);
 		},
 		defaultPathFun: function(ct, graph) {
 			ct.rect(0, 0, graph.width, graph.height);
 		},
 		addEventListener: function(dom, e, fun) {
 			if (dom.addEventListener) dom.addEventListener(e, fun, false);
-			else if (dom.attachEvent) dom.attachEvent("on" + e, fun);
+			else if (dom.attachEvent) dom.attachEvent(e, fun);
 			else {
-				dom["on" + e] = fun;
+				dom[e] = fun;
 			}
 		},
 		getBrowser: function() { //识别浏览器
@@ -1054,31 +1104,35 @@ function newC_GUI() {
 			return Math.floor(min + Math.random() * (max - min));
 		},
 		fpscounter: function() {
-			C_GUI.fps.v = C_GUI.fps.c;
-			C_GUI.fps.c = 0;
+			COL.fps.v = COL.fps.c;
+			COL.fps.c = 0;
 		}
+		/*,
+		dichotomySearch:function(array,fun){
+			if(typeof array=="object")
+		}*/
 	};
 
-	C_GUI.Debug = {
+	COL.Debug = {
 		stat: false,
 		eleinfo: false,
 		itemcount: 0,
 		on: function() {
-			if (!C_GUI.Debug.stat) {
-				C_GUI.Debug.stat = true;
-				clearInterval(C_GUI.fps.i);
-				C_GUI.fps.c = 0;
-				C_GUI.fps.i = setInterval(C_GUI.tools.fpscounter, 1000);
+			if (!COL.Debug.stat) {
+				COL.Debug.stat = true;
+				clearInterval(COL.fps.i);
+				COL.fps.c = 0;
+				COL.fps.i = setInterval(COL.tools.fpscounter, 1000);
 			}
 		},
 		off: function() {
-			if (C_GUI.Debug.stat) {
-				C_GUI.Debug.stat = false;
-				clearInterval(C_GUI.fps.i);
+			if (COL.Debug.stat) {
+				COL.Debug.stat = false;
+				clearInterval(COL.fps.i);
 			}
 		}
 	};
-	return C_GUI;
+	return COL;
 } (function() {
 	var lastTime = 0;
 	var vendors = ['ms', 'moz', 'webkit', 'o'];
@@ -1086,10 +1140,9 @@ function newC_GUI() {
 		window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
 		window.cancelRequestAnimationFrame = window[vendors[x] + 'CancelRequestAnimationFrame'];
 	}
-
 	if (!window.requestAnimationFrame) window.requestAnimationFrame = function(callback, element) {
 		var currTime = new Date().getTime();
-		var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+		var timeToCall = Math.max(0, 1000 / 60 - (currTime - lastTime));
 		var id = window.setTimeout(function() {
 			callback(currTime + timeToCall);
 		},
@@ -1097,7 +1150,6 @@ function newC_GUI() {
 		lastTime = currTime + timeToCall;
 		return id;
 	};
-
 	if (!window.cancelAnimationFrame) window.cancelAnimationFrame = function(id) {
 		clearTimeout(id);
 	};
