@@ -440,10 +440,8 @@ function initPlayer(_in_videoid) {
 
 	}
 	function initTextDanmuContainer() {
-		/*window.ctt = */
 		/*普通弹幕层*/
 		danmucontainer = COL.Graph.New();
-		//COL.Graph.Eventable(danmucontainer);
 		danmucontainer.name = "danmucontainer";
 		danmucontainer.needsort = false;
 		COL.document.addChild(danmucontainer);
@@ -454,7 +452,7 @@ function initPlayer(_in_videoid) {
 		COL.document.addChild(zimucontainer);
 		zimucontainer.zindex(0);
 	}
-	function changetab(tab) {
+	/*function changetab(tab) {
 		for (var i = 0; i < player.ctrlbuttons.length; i++) {
 			if (player.ctrlbuttons[i].id == tab) {
 				player.tabpages[i].style.display = "block";
@@ -463,7 +461,7 @@ function initPlayer(_in_videoid) {
 			}
 
 		}
-	}
+	}*/
 	function setPlayOption() {
 		player.o.recycle = false;
 
