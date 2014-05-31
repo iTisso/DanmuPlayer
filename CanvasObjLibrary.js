@@ -570,12 +570,10 @@ function newCOL() {
 			},
 			t: {
 				vary: function(ct) {
-					ct.beginPath();
 					ct.textBaseline = this.baseline;
 					ct.lineWidth = this.textborderWidth;
 					ct.strokeStyle = this.textborderColor;
 					ct.fillStyle = this.color || COL.font.color || "#000";
-					//ct.save();
 					if (this.shadowBlur > 0) {
 						ct.font = this.font;
 						ct.shadowBlur = this.shadowBlur;
@@ -588,22 +586,28 @@ function newCOL() {
 						ct.translate(0, this.lineHeight / 2);
 						if (this.columndirection === 0) {
 							for (var i = 0; i < this.varylist.length; i++) {
+								ct.save();
 								if (this.fill) {
 									ct.fillText(this.varylist[i], this.innerX, this.innerY);
 								}
 								if (this.textborderWidth) {
+									ct.shadowBlur=0;
 									ct.strokeText(this.varylist[i], this.innerX, this.innerY);
 								}
+								ct.restore();
 								ct.translate(0, this.lineHeight);
 							}
 						} else if (this.columndirection == 1) {
 							for (var i = this.varylist.length - 1; i > 0; i--) {
+								ct.save();
 								if (this.fill) {
 									ct.fillText(this.varylist[i], this.innerX, this.innerY);
 								}
 								if (this.textborderWidth) {
+									ct.shadowBlur=0;
 									ct.strokeText(this.varylist[i], this.innerX, this.innerY);
 								}
+								ct.restore();
 								ct.translate(0, this.lineHeight);
 							}
 						}
@@ -620,6 +624,7 @@ function newCOL() {
 										ct.fillText(thisline[im], this.innerX, this.innerY);
 									}
 									if (this.textborderWidth) {
+										ct.shadowBlur=0;
 										ct.strokeText(thisline[im], this.innerX, this.innerY);
 									}
 									ct.restore();
@@ -639,6 +644,7 @@ function newCOL() {
 										ct.fillText(thisline[im], this.innerX, this.innerY);
 									}
 									if (this.textborderWidth) {
+										ct.shadowBlur=0;
 										ct.strokeText(thisline[im], this.innerX, this.innerY);
 									}
 									ct.restore();
@@ -668,6 +674,9 @@ function newCOL() {
 
 					this.font = font;
 					ct.font = font;
+					this.plusoffsetX=this.shadowBlur+(this.shadowOffset.x<0?-this.shadowOffset.x:0);
+					this.plusoffsetY=this.shadowBlur+(this.shadowOffset.y<0?-this.shadowOffset.y:0);
+					var addedwidth=this.shadowBlur*2+Math.abs(this.shadowOffset.x),addedheight=this.shadowBlur*2+Math.abs(this.shadowOffset.y);
 					if (this.autoSize) {
 						var w = 0,
 						tw;
@@ -676,8 +685,8 @@ function newCOL() {
 								tw = ct.measureText(this.varylist[i]).width;
 								w = tw > w ? tw: w;
 							}
-							this.width = imgobj.width = (this.maxWidth >= w) ? this.maxWidth: w;
-							this.height = imgobj.height = this.varylist.length * this.lineHeight;
+							imgobj.width = (this.width = (this.maxWidth >= w) ? this.maxWidth: w)+addedwidth;
+							 imgobj.height =(this.height = this.varylist.length * this.lineHeight)+addedheight;
 						} else if (this.linedirection == 1) {
 							for (var i = 0; i < this.varylist.length; i++) {
 								tw = this.varylist[i].split("").length;
@@ -692,6 +701,7 @@ function newCOL() {
 						imgobj.width = (this.width >= 0) ? this.width: 100;
 						imgobj.height = (this.height >= 0) ? this.height: 30;
 					}
+					ct.translate( this.plusoffsetX,this.plusoffsetY);
 					this.vary(ct);
 				},
 				setSize: function(width, height) {
@@ -831,9 +841,12 @@ function newCOL() {
 							cObj.vary(ct);
 							ct.restore();
 						} else {
+							
 							if (cObj.imageobj && cObj.imageobj.width && cObj.imageobj.height) {
-								ct.drawImage(cObj.imageobj, 0, 0);
+								ct.save();ct.translate(-cObj.plusoffsetX,-cObj.plusoffsetY);
+								ct.drawImage(cObj.imageobj, 0, 0);ct.restore();
 							}
+							
 						}
 
 						break;
