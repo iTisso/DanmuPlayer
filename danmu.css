@@ -24,6 +24,28 @@ letter-spacing: 0;
 -ms-user-select: none;
 user-select: none;
 }
+.danmuContextMenu{
+	background-color: rgba(255,255,255,0.8);
+	border: 0.2px solid rgba(211, 188, 188, 0.91);
+	position: absolute;
+	z-index: 200;
+	width: 100px;
+	display: none;
+	text-align: right;
+}
+.danmuContextMenu div,.danmuContextMenu span{
+	position: relative;
+	line-height: 20px;
+	width: 100%;
+	overflow: hidden;
+	height: 20px;
+	word-break: break-all;
+	text-overflow: ellipsis;
+	font-size: 15px;
+}
+.danmuContextMenu div:hover{
+	background-color: #66ccff;
+}
 .playermainbody {
 	position: relative;
 height:500px;

@@ -34,6 +34,8 @@ function newCOL() {
 		canvasonfocus: false,
 		document: null,
 		onoverElement: null,
+		simpleMouseCheckMode: false,
+		MatrixTransformMode: false,
 		tmpGraphID: 0,
 		tmpEventID: 0,
 		fps: {
@@ -75,7 +77,7 @@ function newCOL() {
 		}
 	};
 	COL.generateGraphID = function() {
-		return ++COL.tmpGraphID;
+		return++COL.tmpGraphID;
 	};
 	COL.imageSmoothing = {
 		on: function() {
@@ -316,7 +318,19 @@ function newCOL() {
 		COL.document.width = canvas_dom.width;
 		COL.document.height = canvas_dom.height;
 		COL.drawlist = [COL.document];
+		COL.MatrixTransform.off();
 	};
+
+	COL.MatrixTransform = {
+		on: function() {
+			COL.MatrixTransformMode = true;
+			COL.transform = COL.optionalFun.transformDirect;
+		},
+		off: function() {
+			COL.MatrixTransformMode = true;
+			COL.transform = COL.optionalFun.transformLinear;
+		}
+	}
 
 	COL.setBuffCanvas = function(buf) {
 		COL.buffercanvas = buf;
@@ -359,6 +373,7 @@ function newCOL() {
 				eventable: false,
 				imageobj: null,
 				needsort: true,
+				matrix: COL.MatrixTransformMode ? new Float64Array([1, 0, 0, 0, 1, 0, 0, 0, 1]) : null,
 				z_index: null,
 				clipBy: "border",
 				drawlist: [],
@@ -377,7 +392,8 @@ function newCOL() {
 				clone: cF.clone,
 				addChild: cF.addChild,
 				removeChild: cF.removeChild,
-				fireEvent: COL.Graph.commonFunction.Event.fireEvent
+				fireEvent: cF.Event.fireEvent,
+				setMatrix: cF.setMatrix
 			};
 			if (opjson) {
 				for (var ob in opjson) {
@@ -568,6 +584,36 @@ function newCOL() {
 					}
 				}
 			},
+			setMatrix: function(floatarrayMatrix) {
+				if (!floatarrayMatrix) {
+					var rotate = this.rotate * 0.0174532925,
+					cos = Math.cos(rotate),
+					sin = Math.sin(rotate);
+					if (!this.matrix) this.matrix = new Float64Array([1, 0, 0, 0, 1, 0, 0, 0, 1]);
+					this.matrix.set(COL.tools.multiplyMatrix([this.zoom.x, 0, 0, 0, this.zoom.y, 0, 0, 0, 0], [cos, -sin, 0, sin, cos, 0, 0, 0, 0], [1, 0, this.x + this.rotatecenter.x - this.positionpoint.x, 0, 1, this.y + this.rotatecenter.y - this.positionpoint.y, 0, 0, 0]));
+				} else {
+					this.matrix = floatarrayMatrix;
+				}
+			},
+			isPointInPath:function(ct,cObj){
+				if (cObj.overPath) {
+								cObj.overPath(ct);
+							} else if (cObj.drawfunction) {
+								cObj.drawfunction(ct);
+							} else {
+								COL.tools.defaultPathFun(ct, cObj);
+							}
+							if (ct.isPointInPath(COL.mouseX, COL.mouseY)) {
+								COL.newonoverElement = cObj;
+								if (COL.Debug.stat) {
+									ct.save();
+									ct.globalCompositeOperation = "lighter";
+									ct.fillStyle = "rgba(255,255,255,0.3)";
+									ct.fill();
+									ct.restore();
+								}
+							}
+			},
 			t: {
 				vary: function(ct) {
 					ct.textBaseline = this.baseline;
@@ -591,7 +637,7 @@ function newCOL() {
 									ct.fillText(this.varylist[i], this.innerX, this.innerY);
 								}
 								if (this.textborderWidth) {
-									ct.shadowBlur=0;
+									ct.shadowBlur = 0;
 									ct.strokeText(this.varylist[i], this.innerX, this.innerY);
 								}
 								ct.restore();
@@ -604,7 +650,7 @@ function newCOL() {
 									ct.fillText(this.varylist[i], this.innerX, this.innerY);
 								}
 								if (this.textborderWidth) {
-									ct.shadowBlur=0;
+									ct.shadowBlur = 0;
 									ct.strokeText(this.varylist[i], this.innerX, this.innerY);
 								}
 								ct.restore();
@@ -624,7 +670,7 @@ function newCOL() {
 										ct.fillText(thisline[im], this.innerX, this.innerY);
 									}
 									if (this.textborderWidth) {
-										ct.shadowBlur=0;
+										ct.shadowBlur = 0;
 										ct.strokeText(thisline[im], this.innerX, this.innerY);
 									}
 									ct.restore();
@@ -644,7 +690,7 @@ function newCOL() {
 										ct.fillText(thisline[im], this.innerX, this.innerY);
 									}
 									if (this.textborderWidth) {
-										ct.shadowBlur=0;
+										ct.shadowBlur = 0;
 										ct.strokeText(thisline[im], this.innerX, this.innerY);
 									}
 									ct.restore();
@@ -656,9 +702,10 @@ function newCOL() {
 					}
 				},
 				prepareText: function() {
-					if ((!this.imageobj)||(!this.imageobj.getContext)) {
-						this.imageobj= document.createElement("canvas");
-					}var imgobj=this.imageobj;
+					if ((!this.imageobj) || (!this.imageobj.getContext)) {
+						this.imageobj = document.createElement("canvas");
+					}
+					var imgobj = this.imageobj;
 					var ct = imgobj.getContext("2d");
 					ct.clearRect(0, 0, imgobj.width, imgobj.height);
 					this.varylist = this.text.split(/\n/g);
@@ -674,9 +721,10 @@ function newCOL() {
 
 					this.font = font;
 					ct.font = font;
-					this.plusoffsetX=this.shadowBlur+(this.shadowOffset.x<0?-this.shadowOffset.x:0);
-					this.plusoffsetY=this.shadowBlur+(this.shadowOffset.y<0?-this.shadowOffset.y:0);
-					var addedwidth=this.shadowBlur*2+Math.abs(this.shadowOffset.x),addedheight=this.shadowBlur*2+Math.abs(this.shadowOffset.y);
+					this.plusoffsetX = this.shadowBlur + (this.shadowOffset.x < 0 ? -this.shadowOffset.x: 0);
+					this.plusoffsetY = this.shadowBlur + (this.shadowOffset.y < 0 ? -this.shadowOffset.y: 0);
+					var addedwidth = this.shadowBlur * 2 + Math.abs(this.shadowOffset.x),
+					addedheight = this.shadowBlur * 2 + Math.abs(this.shadowOffset.y);
 					if (this.autoSize) {
 						var w = 0,
 						tw;
@@ -685,8 +733,8 @@ function newCOL() {
 								tw = ct.measureText(this.varylist[i]).width;
 								w = tw > w ? tw: w;
 							}
-							imgobj.width = (this.width = (this.maxWidth >= w) ? this.maxWidth: w)+addedwidth;
-							 imgobj.height =(this.height = this.varylist.length * this.lineHeight)+addedheight;
+							imgobj.width = (this.width = (this.maxWidth >= w) ? this.maxWidth: w) + addedwidth;
+							imgobj.height = (this.height = this.varylist.length * this.lineHeight) + addedheight;
 						} else if (this.linedirection == 1) {
 							for (var i = 0; i < this.varylist.length; i++) {
 								tw = this.varylist[i].split("").length;
@@ -701,7 +749,7 @@ function newCOL() {
 						imgobj.width = (this.width >= 0) ? this.width: 100;
 						imgobj.height = (this.height >= 0) ? this.height: 30;
 					}
-					ct.translate( this.plusoffsetX,this.plusoffsetY);
+					ct.translate(this.plusoffsetX, this.plusoffsetY);
 					this.vary(ct);
 				},
 				setSize: function(width, height) {
@@ -717,7 +765,7 @@ function newCOL() {
 			},
 			Event: {
 				addEvent: function(name, fun) {
-					if (typeof name == "string") name=name.replace(/^on/, "");
+					if (typeof name == "string") name = name.replace(/^on/, "");
 					if (!this.events[name]) this.events[name] = [];
 					if (typeof(fun) == "function" && this.events[name]) {
 						this.events[name].push(fun);
@@ -736,23 +784,25 @@ function newCOL() {
 					if (typeof ev.ename == "string") ev.ename.replace(/^on/, "");
 					if (this.events && this.events[ev.ename]) {
 						var earr = this.events[ev.ename];
-								var middleindex, starti = 0,
-								endi = earr.length - 1,evid=ev.EventID;
-								while (endi - starti) { //当前后定位不重合
-									middleindex = Math.floor((starti + endi) / 2);
-									if (earr[middleindex].EventID == evid) {
-										earr.splice(middleindex, 1) ;break;
-									} else if (earr[middleindex + 1].EventID >evid) {
-										endi = middleindex;
-									} else {
-										starti = middleindex + 1;
-									}
-								}
+						var middleindex, starti = 0,
+						endi = earr.length - 1,
+						evid = ev.EventID;
+						while (endi - starti) { //当前后定位不重合
+							middleindex = Math.floor((starti + endi) / 2);
+							if (earr[middleindex].EventID == evid) {
+								earr.splice(middleindex, 1);
+								break;
+							} else if (earr[middleindex + 1].EventID > evid) {
+								endi = middleindex;
+							} else {
+								starti = middleindex + 1;
+							}
+						}
 					}
 
 				},
 				fireEvent: function(evename, eobj) {
-					var events=this.events;
+					var events = this.events;
 					if (events && events[evename]) {
 						for (var i = events[evename].length; i--;) {
 							if (typeof(events[evename][i]) == "function") {
@@ -785,10 +835,7 @@ function newCOL() {
 			if (d[i].display) {
 				cObj = d[i];
 				ct.save();
-				ct.translate(cObj.x + cObj.rotatecenter.x - cObj.positionpoint.x, cObj.y + cObj.rotatecenter.y - cObj.positionpoint.y);
-				ct.beginPath();
-				ct.rotate(cObj.rotate * 0.017453);
-				ct.scale(cObj.zoom.x, cObj.zoom.y);
+				COL.transform(ct, cObj);
 				if (cObj.opacity !== null) ct.globalAlpha = cObj.opacity;
 				if (cObj.overflow == "hidden") {
 					ct.beginPath();
@@ -841,12 +888,14 @@ function newCOL() {
 							cObj.vary(ct);
 							ct.restore();
 						} else {
-							
+
 							if (cObj.imageobj && cObj.imageobj.width && cObj.imageobj.height) {
-								ct.save();ct.translate(-cObj.plusoffsetX,-cObj.plusoffsetY);
-								ct.drawImage(cObj.imageobj, 0, 0);ct.restore();
+								ct.save();
+								ct.translate( - cObj.plusoffsetX, -cObj.plusoffsetY);
+								ct.drawImage(cObj.imageobj, 0, 0);
+								ct.restore();
 							}
-							
+
 						}
 
 						break;
@@ -854,25 +903,14 @@ function newCOL() {
 				}
 				ct.save();
 				if (cObj.eventable) {
-					if (COL.mouseX) {
-						if (cObj.overPath) {
-							cObj.overPath(ct);
-						} else if (cObj.drawfunction) {
-							cObj.drawfunction(ct);
-						} else {
-							COL.tools.defaultPathFun(ct, cObj);
+					if (COL.simpleMouseCheckMode) {
+						if (COL.mouseX+COL.mouseY&&COL.mouseX >= cObj.x && COL.mouseY >= cObj.y && COL.mouseX <= cObj.x + cObj.width && COL.mouseY <= cObj.y + cObj.height) {
+							COL.Graph.commonFunction.isPointInPath(ct,cObj);
 						}
-						if (ct.isPointInPath(COL.mouseX, COL.mouseY)) {
-							COL.newonoverElement = cObj;
-							if (COL.Debug.stat) {
-								ct.save();
-								ct.globalCompositeOperation = "lighter";
-								ct.fillStyle = "rgba(255,255,255,0.3)";
-								ct.fill();
-								ct.restore();
-							}
-						}
+					}else{
+						COL.Graph.commonFunction.isPointInPath(ct,cObj);
 					}
+					
 				}
 				if (COL.Debug.stat) {
 					COL.Debug.itemcount++;
@@ -933,24 +971,6 @@ function newCOL() {
 
 	};
 
-	COL.mousePosition = {
-		fun: null,
-		offsetx: 0,
-		offsety: 0,
-		chrome: function(e) {
-			COL.mouseX = e.offsetX;
-			COL.mouseY = e.offsetY;
-		},
-		ie: function(e) {
-			COL.mouseX = e.offsetX;
-			COL.mouseY = e.offsetY;
-		},
-		firefox: function(e) {
-			COL.mouseX = e.layerX;
-			COL.mouseY = e.layerY;
-		}
-	};
-
 	/*把队列中的图形按index绘制出来*/
 	/*draw all graphs whose [display=true]*/
 	// var cct;
@@ -1000,7 +1020,66 @@ function newCOL() {
 		}
 	};
 
+	COL.optionalFun = {
+		transformDirect: function(ct, obj) {
+			if (obj.matrix) {
+				ct.transform(obj.matrix[0], obj.matrix[1], obj.matrix[3], obj.matrix[4], obj.matrix[2], obj.matrix[5]);
+			}
+
+		},
+		transformLinear: function(ct, obj) {
+			ct.translate(obj.x + obj.rotatecenter.x - obj.positionpoint.x, obj.y + obj.rotatecenter.y - obj.positionpoint.y);
+			ct.rotate(obj.rotate * 0.017453);
+			ct.scale(obj.zoom.x, obj.zoom.y);
+		}
+	};
+	//COL.transform = COL.optionalFun.transformLinear;
+	COL.mousePosition = {
+		fun: null,
+		offsetx: 0,
+		offsety: 0,
+		chrome: function(e) {
+			COL.mouseX = e.offsetX;
+			COL.mouseY = e.offsetY;
+		},
+		ie: function(e) {
+			COL.mouseX = e.offsetX;
+			COL.mouseY = e.offsetY;
+		},
+		firefox: function(e) {
+			COL.mouseX = e.layerX;
+			COL.mouseY = e.layerY;
+		}
+	};
+
 	COL.tools = {
+		multiplyMatrix: function() {
+			var mats = arguments;
+			if (mats) {
+				if (mats.length > 1) {
+					var mp, mn;
+					for (var i = mats.length; i--;) {
+						var pm = i - 1;
+						if (pm >= 0) {
+							mp = mats[pm];
+							mn = mats[i];
+							var ta = new Float64Array(9);
+							ta[0] = mp[0] * mn[0] + mp[1] * mn[3] + mp[2] * mn[6];
+							ta[1] = mp[0] * mn[1] + mp[1] * mn[4] + mp[2] * mn[7];
+							ta[2] = mp[0] * mn[2] + mp[1] * mn[5] + mp[2] * mn[8];
+							ta[3] = mp[3] * mn[0] + mp[4] * mn[3] + mp[5] * mn[6];
+							ta[4] = mp[3] * mn[1] + mp[4] * mn[4] + mp[5] * mn[7];
+							ta[5] = mp[3] * mn[2] + mp[4] * mn[5] + mp[5] * mn[8];
+							ta[8] = ta[7] = ta[6] = 0;
+							mats[pm] = (ta);
+						}
+					}
+					return mats[0];
+				}
+			} else {
+				return mats[0];
+			}
+		},
 		getnum: function(string) { //提取字符串里首次出现的数字串
 			if (!string) return 0;
 			else {
@@ -1167,3 +1246,21 @@ function newCOL() {
 		clearTimeout(id);
 	};
 } ());
+
+/*
+图形对象matrix(Float64Array)对象内容
+[0]m11 [1]m12 [2]dx 
+[3]m21 [4]m22 [5]dy
+[6]0      [7]0      [8]1
+
+
+ta[0]=ar[0]*ar[0]+ar[1]*ar[3]+ar[2]*ar[6]
+ta[1]=ar[0]*ar[1]+ar[1]*ar[4]+ar[2]*ar[7]
+ta[2]=ar[0]*ar[2]+ar[1]*ar[5]+ar[2]*ar[8]
+ta[3]=ar[3]*ar[0]+ar[4]*ar[3]+ar[5]*ar[6]
+ta[4]=ar[3]*ar[1]+ar[4]*ar[4]+ar[5]*ar[7]
+ta[5]=ar[3]*ar[2]+ar[4]*ar[5]+ar[5]*ar[8]
+ta[6]=ar[6]*ar[0]+ar[7]*ar[3]+ar[8]*ar[6]
+ta[7]=ar[6]*ar[1]+ar[7]*ar[4]+ar[8]*ar[7]
+ta[8]=ar[6]*ar[2]+ar[7]*ar[5]+ar[8]*ar[8]
+*/

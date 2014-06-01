@@ -433,14 +433,15 @@ function initPlayer(_in_videoid) {
 		initCOL();
 	}
 	function initCOL() {
-		COL = newCOL();
+		window.COL=COL = newCOL();
 		COL.font.color = "#ffffff";
 		COL.font.fontFamily = "'黑体'";
 		COL.setCanvas(player.danmulayer);
 		COL.autoClear = true;
 		Glib = getGraphlib(COL);
 		initTextDanmuContainer();
-
+		COL.simpleMouseCheckMode=true;
+		COL.MatrixTransform.on();
 	}
 	function initTextDanmuContainer() {
 		/*普通弹幕层*/
@@ -454,10 +455,11 @@ function initPlayer(_in_videoid) {
 		danmucontainer.name = "zimucontainer";
 		COL.document.addChild(zimucontainer);
 		zimucontainer.zindex(2);
+
+
 	}
 	function setPlayOption() {
 		player.o.recycle = false;
-
 	}
 	function setDefaultOption() {
 		var ver = "0.3.2";
@@ -792,7 +794,37 @@ function initPlayer(_in_videoid) {
 	}
 	danmufuns = {
 		initContextMenu: function() {
-			player.ContextMenu = Glib.getGraphObj("rect", {
+			/*弹幕右键菜单*/
+		player.ContextMenu=c_ele("div");
+		player.ContextMenu.content=c_ele("span");
+		player.ContextMenu.plusone=c_ele("div");
+		player.ContextMenu.copy=c_ele("div");
+
+		player.ContextMenu.className="danmuContextMenu";
+		player.ContextMenu.plusone.innerHTML="+1";
+		player.ContextMenu.copy.innerHTML="复制";
+		player.ContextMenu.content.style.color="rgb(44, 123, 138)";
+
+		player.ContextMenu.appendChild(player.ContextMenu.content);
+		player.ContextMenu.appendChild(player.ContextMenu.plusone);
+		player.ContextMenu.appendChild(player.ContextMenu.copy);
+		player.danmuframe.appendChild(player.ContextMenu);
+		aEL(player.ContextMenu,"click",function(e){
+			e.stopPropagation();
+				if (e.target == player.ContextMenu.plusone) {
+					danmufuns.send(player.ContextMenu.danmuobj.c);
+					danmufuns.hideContextMenu();
+				} else if (e.target == player.ContextMenu.copy) {
+					//复制内容到剪贴板
+					//window.clipboardData.setData("text/plain",player.ContextMenu.danmuobj.c);
+					danmufuns.hideContextMenu();
+				}
+		});
+		aEL(player.ContextMenu,"contextmenu",function(e){
+			e.stopPropagation();
+			e.preventDefault();
+		});
+			/*player.ContextMenu = Glib.getGraphObj("rect", {
 				backgroundColor: "rgba(255,255,255,0.8)",
 				borderWidth: 0.2,
 				borderColor: "rgba(211, 188, 188, 0.91)",
@@ -829,18 +861,18 @@ function initPlayer(_in_videoid) {
 				x: 0,
 				y: 41,
 				overflow: "hidden"
-			});
+			});*/
 
-			COL.Graph.Eventable(player.ContextMenu);
+			/*COL.Graph.Eventable(player.ContextMenu);
 			COL.Graph.Eventable(player.ContextMenu.copy);
-			COL.Graph.Eventable(player.ContextMenu.plusone);
+			COL.Graph.Eventable(player.ContextMenu.plusone);*/
 
-			player.ContextMenu.addChild(player.ContextMenu.content);
+			/*player.ContextMenu.addChild(player.ContextMenu.content);
 			player.ContextMenu.addChild(player.ContextMenu.plusone);
-			player.ContextMenu.addChild(player.ContextMenu.copy);
-			COL.document.addChild(player.ContextMenu);
+			player.ContextMenu.addChild(player.ContextMenu.copy);*/
+			/*COL.document.addChild(player.ContextMenu);*/
 
-			player.ContextMenu.addEvent("mouseover",
+			/*player.ContextMenu.addEvent("mouseover",
 			function(e) {
 				e.stopPropagation();
 				if (e.target != player.ContextMenu) {
@@ -865,21 +897,22 @@ function initPlayer(_in_videoid) {
 					//window.clipboardData.setData("text/plain",player.ContextMenu.danmuobj.c);
 					danmufuns.hideContextMenu();
 				}
-			});
+			});*/
 		},
 		showContextMenu: function(textobj, danmuobj) {
-			player.ContextMenu.display = true;
+			player.ContextMenu.style.display = "block";
 			player.ContextMenu.danmuobj = danmuobj;
-			player.ContextMenu.content.setText(danmuobj.c);
+			player.ContextMenu.content.innerHTML=danmuobj.c;
 			var x = COL.mouseX,
 			y = COL.mouseY;
-			if (x > width - player.ContextMenu.width) x = width - player.ContextMenu.width;
-			if (y > tunnelheight - player.ContextMenu.height) y = tunnelheight - player.ContextMenu.height;
-			player.ContextMenu.x = x;
-			player.ContextMenu.y = y;
+			if (x > width - player.ContextMenu.offsetWidth) x = width - player.ContextMenu.offsetWidth;
+			if (y > tunnelheight - player.ContextMenu.offsetHeight) y = tunnelheight - player.ContextMenu.offsetHeight;
+			player.ContextMenu.style.left = x+"px";
+			player.ContextMenu.style.top = y+"px";
 		},
 		hideContextMenu: function() {
-			player.ContextMenu.display = false;
+			if(player.ContextMenu)
+			player.ContextMenu.style.display = "none";
 		},
 		createCommonDanmufun: {
 			canvas: function(danmuobj) {
@@ -945,6 +978,7 @@ function initPlayer(_in_videoid) {
 					{
 						return;
 					}
+
 				}
 				if (danmuobj.sended) {
 					var lineset = TextDanmu.lineHeight * TextDanmu.varylist.length - 5;
@@ -971,7 +1005,7 @@ function initPlayer(_in_videoid) {
 							danmufuns.showContextMenu(TextDanmu, danmuobj);
 						}
 					}
-				});
+				});TextDanmu.setMatrix();
 				danmucontainer.addChild(TextDanmu);
 			},
 			div: function(danmuobj) {
@@ -996,7 +1030,7 @@ function initPlayer(_in_videoid) {
 				TextDanmu.className = "divtextdanmu";
 				TextDanmu.type = danmuobj.ty;
 				TextDanmu.time = danmuobj.t;
-				TextDanmu.style.fontSize = danmuobj.s + "px";
+				TextDanmu.style.fontSize = danmuobj.s -5+ "px";
 				TextDanmu.style.textAlign = "left";
 
 				TextDanmu.style.textShadow="-"+player.o.StorkeWidth+"px 0 "+bordercolor+",0px "+player.o.StorkeWidth+"px "+bordercolor+","+player.o.StorkeWidth+"px 0 "+bordercolor+",0px -"+player.o.StorkeWidth+"px "+bordercolor+",0 0 3px black";
@@ -1327,6 +1361,7 @@ function initPlayer(_in_videoid) {
 								} else if (node.x < -node.width) {
 									COL.Graph.Delete(node);
 								}
+								node.setMatrix();
 								break;
 							}
 						case 1:
@@ -1339,6 +1374,7 @@ function initPlayer(_in_videoid) {
 								} else if (node.x > width) {
 									COL.Graph.Delete(node);
 								}
+								node.setMatrix();
 								break;
 							}
 						case 2:
@@ -2191,3 +2227,4 @@ danmuarray[t][i]
 .ty=5;
 .fun=function
 .obj=zimuobj*/
+
