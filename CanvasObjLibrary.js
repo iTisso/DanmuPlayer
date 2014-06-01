@@ -266,7 +266,6 @@ function newCOL() {
 			}
 
 		});
-
 		aEL(window, "keydown",
 		function(e) {
 			if (COL.canvasonfocus) {
@@ -549,6 +548,7 @@ function newCOL() {
 				newobj.parentNode = null;
 				newobj.childNode = [];
 				newobj.drawlist = [];
+				newobj.GraphID=COL.generateGraphID();
 				return newobj;
 			},
 			clone: function() {
@@ -741,8 +741,8 @@ function newCOL() {
 								w = tw > w ? tw: w;
 							}
 							w *= this.fontSize;
-							this.width = imgobj.width = this.varylist.length * this.lineHeight;
-							this.height = imgobj.height = (this.maxWidth >= w) ? this.maxWidth: w;
+							 imgobj.width =(this.width = this.varylist.length * this.lineHeight)+addedwidth;
+							 imgobj.height =(this.height = (this.maxWidth >= w) ? this.maxWidth: w)+addedheight;
 						}
 
 					} else {

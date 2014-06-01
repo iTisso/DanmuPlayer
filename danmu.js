@@ -16,7 +16,6 @@ function d_selectall(query) {
 function c_ele(tag) {
 	return document.createElement(tag);
 }
-
 var _string_ = {
 	removesidespace: function(string) {
 		if (typeof string == "string") {
@@ -433,14 +432,14 @@ function initPlayer(_in_videoid) {
 		initCOL();
 	}
 	function initCOL() {
-		window.COL=COL = newCOL();
+		window.COL = COL = newCOL();
 		COL.font.color = "#ffffff";
 		COL.font.fontFamily = "'黑体'";
 		COL.setCanvas(player.danmulayer);
 		COL.autoClear = true;
 		Glib = getGraphlib(COL);
 		initTextDanmuContainer();
-		COL.simpleMouseCheckMode=true;
+		COL.simpleMouseCheckMode = true;
 		COL.MatrixTransform.on();
 	}
 	function initTextDanmuContainer() {
@@ -455,7 +454,6 @@ function initPlayer(_in_videoid) {
 		danmucontainer.name = "zimucontainer";
 		COL.document.addChild(zimucontainer);
 		zimucontainer.zindex(2);
-
 
 	}
 	function setPlayOption() {
@@ -686,6 +684,7 @@ function initPlayer(_in_videoid) {
 					y: danmucontainer.childNode[i].tunnelobj[2]
 				});
 			}
+			danmucontainer.childNode[i].setMatrix();
 		}
 		controlfuns.refreshDanmuMark();
 	}
@@ -795,98 +794,21 @@ function initPlayer(_in_videoid) {
 	danmufuns = {
 		initContextMenu: function() {
 			/*弹幕右键菜单*/
-		player.ContextMenu=c_ele("div");
-		player.ContextMenu.content=c_ele("span");
-		player.ContextMenu.plusone=c_ele("div");
-		player.ContextMenu.copy=c_ele("div");
+			player.ContextMenu = c_ele("div");
+			player.ContextMenu.content = c_ele("span");
+			player.ContextMenu.plusone = c_ele("div");
+			player.ContextMenu.copy = c_ele("div");
 
-		player.ContextMenu.className="danmuContextMenu";
-		player.ContextMenu.plusone.innerHTML="+1";
-		player.ContextMenu.copy.innerHTML="复制";
-		player.ContextMenu.content.style.color="rgb(44, 123, 138)";
+			player.ContextMenu.className = "danmuContextMenu";
+			player.ContextMenu.plusone.innerHTML = "+1";
+			player.ContextMenu.copy.innerHTML = "复制";
+			player.ContextMenu.content.style.color = "rgb(44, 123, 138)";
 
-		player.ContextMenu.appendChild(player.ContextMenu.content);
-		player.ContextMenu.appendChild(player.ContextMenu.plusone);
-		player.ContextMenu.appendChild(player.ContextMenu.copy);
-		player.danmuframe.appendChild(player.ContextMenu);
-		aEL(player.ContextMenu,"click",function(e){
-			e.stopPropagation();
-				if (e.target == player.ContextMenu.plusone) {
-					danmufuns.send(player.ContextMenu.danmuobj.c);
-					danmufuns.hideContextMenu();
-				} else if (e.target == player.ContextMenu.copy) {
-					//复制内容到剪贴板
-					//window.clipboardData.setData("text/plain",player.ContextMenu.danmuobj.c);
-					danmufuns.hideContextMenu();
-				}
-		});
-		aEL(player.ContextMenu,"contextmenu",function(e){
-			e.stopPropagation();
-			e.preventDefault();
-		});
-			/*player.ContextMenu = Glib.getGraphObj("rect", {
-				backgroundColor: "rgba(255,255,255,0.8)",
-				borderWidth: 0.2,
-				borderColor: "rgba(211, 188, 188, 0.91)",
-				width: 100,
-				height: 70,
-				x: 0,
-				y: 0,
-				display: false
-			});
-			player.ContextMenu.zindex(20);
-			player.ContextMenu.content = COL.Graph.NewTextObj("somethig", 16, {
-				autoSize: false,
-				width: 100,
-				height: 20,
-				x: 0,
-				y: 0,
-				overflow: "hidden",
-				color: "rgb(44, 123, 138)"
-			});
-
-			player.ContextMenu.plusone = COL.Graph.NewTextObj("         +1", 16, {
-				autoSize: false,
-				width: 100,
-				height: 20,
-				x: 0,
-				y: 21,
-				overflow: "hidden"
-			});
-
-			player.ContextMenu.copy = COL.Graph.NewTextObj("       复制", 16, {
-				autoSize: false,
-				width: 100,
-				height: 20,
-				x: 0,
-				y: 41,
-				overflow: "hidden"
-			});*/
-
-			/*COL.Graph.Eventable(player.ContextMenu);
-			COL.Graph.Eventable(player.ContextMenu.copy);
-			COL.Graph.Eventable(player.ContextMenu.plusone);*/
-
-			/*player.ContextMenu.addChild(player.ContextMenu.content);
-			player.ContextMenu.addChild(player.ContextMenu.plusone);
-			player.ContextMenu.addChild(player.ContextMenu.copy);*/
-			/*COL.document.addChild(player.ContextMenu);*/
-
-			/*player.ContextMenu.addEvent("mouseover",
-			function(e) {
-				e.stopPropagation();
-				if (e.target != player.ContextMenu) {
-					e.target.backgroundColor = "#66ccff";
-				}
-			});
-			player.ContextMenu.addEvent("mouseout",
-			function(e) {
-				e.stopPropagation();
-				if (e.target != player.ContextMenu) {
-					e.target.backgroundColor = null;
-				}
-			});
-			player.ContextMenu.addEvent("click",
+			player.ContextMenu.appendChild(player.ContextMenu.content);
+			player.ContextMenu.appendChild(player.ContextMenu.plusone);
+			player.ContextMenu.appendChild(player.ContextMenu.copy);
+			player.danmuframe.appendChild(player.ContextMenu);
+			aEL(player.ContextMenu, "click",
 			function(e) {
 				e.stopPropagation();
 				if (e.target == player.ContextMenu.plusone) {
@@ -897,22 +819,26 @@ function initPlayer(_in_videoid) {
 					//window.clipboardData.setData("text/plain",player.ContextMenu.danmuobj.c);
 					danmufuns.hideContextMenu();
 				}
-			});*/
+			});
+			aEL(player.ContextMenu, "contextmenu",
+			function(e) {
+				e.stopPropagation();
+				e.preventDefault();
+			});
 		},
 		showContextMenu: function(textobj, danmuobj) {
 			player.ContextMenu.style.display = "block";
 			player.ContextMenu.danmuobj = danmuobj;
-			player.ContextMenu.content.innerHTML=danmuobj.c;
+			player.ContextMenu.content.innerHTML = danmuobj.c;
 			var x = COL.mouseX,
 			y = COL.mouseY;
 			if (x > width - player.ContextMenu.offsetWidth) x = width - player.ContextMenu.offsetWidth;
 			if (y > tunnelheight - player.ContextMenu.offsetHeight) y = tunnelheight - player.ContextMenu.offsetHeight;
-			player.ContextMenu.style.left = x+"px";
-			player.ContextMenu.style.top = y+"px";
+			player.ContextMenu.style.left = x + "px";
+			player.ContextMenu.style.top = y + "px";
 		},
 		hideContextMenu: function() {
-			if(player.ContextMenu)
-			player.ContextMenu.style.display = "none";
+			if (player.ContextMenu) player.ContextMenu.style.display = "none";
 		},
 		createCommonDanmufun: {
 			canvas: function(danmuobj) {
@@ -981,8 +907,8 @@ function initPlayer(_in_videoid) {
 
 				}
 				if (danmuobj.sended) {
-					var lineset = TextDanmu.lineHeight * TextDanmu.varylist.length - 5;
-					TextDanmu.afterdrawfun = eval('function sendedline(ct) {ct.strokeStyle = "#66ccff";ct.moveTo(0,' + lineset + ');ct.lineTo(' + TextDanmu.width + ', ' + lineset + ');ct.stroke();}');
+					var lineset = TextDanmu.lineHeight * TextDanmu.varylist.length - 10;
+					TextDanmu.afterdrawfun = eval('function sendedline(ct) {;ct.strokeStyle = "#66ccff";ct.moveTo(0,' + lineset + ');ct.lineTo(' + TextDanmu.width + ', ' + lineset + ');ct.stroke();}');
 				}
 				TextDanmu.danmuobj = danmuobj;
 				COL.Graph.Eventable(TextDanmu);
@@ -1001,11 +927,11 @@ function initPlayer(_in_videoid) {
 						}
 					case 2:
 						{
-							//player.video.pause();
 							danmufuns.showContextMenu(TextDanmu, danmuobj);
 						}
 					}
-				});TextDanmu.setMatrix();
+				});
+				TextDanmu.setMatrix();
 				danmucontainer.addChild(TextDanmu);
 			},
 			div: function(danmuobj) {
@@ -1030,17 +956,17 @@ function initPlayer(_in_videoid) {
 				TextDanmu.className = "divtextdanmu";
 				TextDanmu.type = danmuobj.ty;
 				TextDanmu.time = danmuobj.t;
-				TextDanmu.style.fontSize = danmuobj.s -5+ "px";
+				TextDanmu.style.fontSize = danmuobj.s - 5 + "px";
 				TextDanmu.style.textAlign = "left";
 
-				TextDanmu.style.textShadow="-"+player.o.StorkeWidth+"px 0 "+bordercolor+",0px "+player.o.StorkeWidth+"px "+bordercolor+","+player.o.StorkeWidth+"px 0 "+bordercolor+",0px -"+player.o.StorkeWidth+"px "+bordercolor+",0 0 3px black";
+				TextDanmu.style.textShadow = "-" + player.o.StorkeWidth + "px 0 " + bordercolor + ",0px " + player.o.StorkeWidth + "px " + bordercolor + "," + player.o.StorkeWidth + "px 0 " + bordercolor + ",0px -" + player.o.StorkeWidth + "px " + bordercolor + ",0 0 3px black";
 
 				player.danmuframe.appendChild(TextDanmu);
 				TextDanmu.tunnelobj = danmufuns.getTunnel(danmuobj.ty, TextDanmu.offsetHeight);
 				switch (danmuobj.ty) {
 				case 0:
 					{
-						TextDanmu.style.right =-TextDanmu.offsetWidth + "px";
+						TextDanmu.style.right = -TextDanmu.offsetWidth + "px";
 						TextDanmu.style.top = TextDanmu.tunnelobj[2] + "px";
 						break;
 					}
@@ -1054,14 +980,14 @@ function initPlayer(_in_videoid) {
 					{
 						addEleClass(TextDanmu, "divbottomdanmu");
 						TextDanmu.style.bottom = TextDanmu.tunnelobj[2] + "px";
-						TextDanmu.style.left=(width-TextDanmu.offsetWidth)/2+"px";
+						TextDanmu.style.left ="calc(50% - "+TextDanmu.offsetWidth/2+"px)"; /*(width - TextDanmu.offsetWidth) / 2 + "px";*/
 						break;
 					}
 				case 3:
 					{
 						addEleClass(TextDanmu, "divtopdanmu");
 						TextDanmu.style.top = TextDanmu.tunnelobj[2] + "px";
-						TextDanmu.style.left=(width-TextDanmu.offsetWidth)/2+"px";
+						TextDanmu.style.left ="calc(50% - "+TextDanmu.offsetWidth/2+"px)";
 						break;
 					}
 				default:
@@ -1073,27 +999,28 @@ function initPlayer(_in_videoid) {
 					TextDanmu.style.borderBottom = "1px solid #66ccff";
 				}
 				TextDanmu.danmuobj = danmuobj;
+				TextDanmu.oncontextmenu = function(e) {
+					e.preventDefault();
+				}
 				aEL(TextDanmu, "mousedown",
 				function(e) {
 					switch (e.button) {
-				case 0:
-					{
-						if (player.video.paused) {
-							danmufuns.start();
-							player.video.play();
-						} else {
-							player.video.pause();
+					case 0:
+						{
+							if (player.video.paused) {
+								danmufuns.start();
+								player.video.play();
+							} else {
+								player.video.pause();
+							}
+							break;
 						}
-						break;
+					case 2:
+						{
+							danmufuns.showContextMenu(TextDanmu, danmuobj);
+						}
 					}
-				case 2:
-					{
-						//player.video.pause();
-						danmufuns.showContextMenu(TextDanmu, danmuobj);
-					}
-				}
-});
-
+				});
 			}
 		},
 		createCommonDanmu: null,
@@ -1265,9 +1192,9 @@ function initPlayer(_in_videoid) {
 		},
 		clearfun: {
 			div: function() {
-				for(var i=divdanmucontainer.length;i--;){
+				for (var i = divdanmucontainer.length; i--;) {
 					divdanmucontainer[i].parentNode.removeChild(divdanmucontainer[i]);
-					divdanmucontainer.slice(i,1);
+					divdanmucontainer.splice(i, 1);
 				}
 				danmutunnel = {
 					right: [],
@@ -1288,7 +1215,7 @@ function initPlayer(_in_videoid) {
 				};
 			}
 		},
-		clear: null,
+		clear: function() {},
 		start: function() {
 			timepoint = getVideoMillionSec();
 			newTimePiece(timepoint);
@@ -1313,30 +1240,38 @@ function initPlayer(_in_videoid) {
 			div: function() {
 				if (player.assvar.isPlaying) {
 					var nowtime = (player.video.currentTime * 1000).toFixed();
-					for (var i =  divdanmucontainer.length; i --; ) {
+					for (var i = divdanmucontainer.length-1; i>=0;i--) {
 						var node = divdanmucontainer[i];
 						switch (node.type) {
-						case 0:case 1:
+						case 0:
+						case 1:
 							{
-								var tmp=node.type?"left":"right";
-								var nodewidth=node.offsetWidth,roadLength = width +nodewidth;
-								node.style[tmp]= roadLength * ((nowtime - node.time) / moveTime / width * 520)-nodewidth+"px";
-								if (node.tunnelobj && node.style[tmp]>150) {
+								var tmp = node.type ? "left": "right";
+								var nodewidth = node.offsetWidth,
+								roadLength = width + nodewidth,
+								hasgone=roadLength * ((nowtime - node.time) / moveTime / width * 520) - nodewidth;
+								node.style[tmp] = hasgone + "px";
+								if (node.tunnelobj && node.style[tmp] > 150) {
 									danmutunnel[tmp][node.tunnelobj[1]][node.tunnelobj[2]] = null;
 									node.tunnelobj = null;
-								} else if (node.style[tmp] >width) {
-									
-									divdanmucontainer.slice(i,1);node.parentNode.removeChild(node);
+								} else if (hasgone> width) {
+									divdanmucontainer.splice(i, 1);
+									player.danmuframe.removeChild(node);
+									delete node;
+									continue;
 								}
 								break;
 							}
-						case 2:case 3:
-							{	
-								var tmp=node.type==2?"bottom":"top";
+						case 2:
+						case 3:
+							{
+								var tmp = node.type == 2 ? "bottom": "top";
 								if (nowtime - node.time > moveTime) {
-									
 									danmutunnel[tmp][node.tunnelobj[1]][node.tunnelobj[2]] = null;
-									divdanmucontainer.slice(i,1);player.danmuframe.removeChild(node);
+									divdanmucontainer.splice(i, 1);
+									player.danmuframe.removeChild(node);
+									delete node;
+									continue;
 								}
 								break;
 							}
@@ -1834,8 +1769,9 @@ function initPlayer(_in_videoid) {
 			switch (e.keyCode) {
 			case 84:
 				{
-					e.preventDefault();
+
 					if (e.altKey && e.ctrlKey) {
+						e.preventDefault();
 						player.inputs.gettime.value = getVideoMillionSec();
 					}
 					break;
@@ -2227,4 +2163,3 @@ danmuarray[t][i]
 .ty=5;
 .fun=function
 .obj=zimuobj*/
-

@@ -70,10 +70,12 @@ Glib.Graph['arc'] = function(optionjson) {
 		g.height = 2 * r;
 	}
 	g.drawfunction = function(ct) {
+		ct.beginPath();
 		ct.fillStyle = g.fillColor|| "#66CCFF";
 		ct.strokeStyle = g.borderColor || "#000";
 		ct.lineWidth =g.borderWidth|| 0;
 		g.graphFun(ct);
+		ct.closePath();
 		ct.fill();
 	}
 	return g;
@@ -86,19 +88,21 @@ Glib.Graph['rect'] = function(optionjson) {
 			}
 		}
 
-		g.width = g.width || 50;
-		g.height = g.height || 50;
+		g.width = g.width>=0? g.width:50;
+		g.height = g.height>=0? g.height:50;
 		if(g.iffill===null)g.iffill = true;
 		g.graphFun = function(ct) {
 			ct.rect(0, 0, g.width, g.height);
 		}
 		g.drawfunction = function(ct) {
-			g.graphFun(ct);
+			ct.beginPath();g.graphFun(ct);
 			if (g.iffill) {
-				ct.fillColor = g.fillColor|| "#000";
+				ct.fillStyle= g.fillColor|| "#000";
+				ct.fillRect(0,0,g.width,g.height);
 				ct.fill();
 			}
 			if (g.borderWidth  > 0) {
+				
 				ct.strokeStyle = g.borderColor|| "#000";
 				ct.lineWidth = g.borderWidth ;
 				ct.stroke();
