@@ -1248,20 +1248,3 @@ function newCOL() {
 	};
 } ());
 
-/*
-图形对象matrix(Float64Array)对象内容
-[0]m11 [1]m12 [2]dx 
-[3]m21 [4]m22 [5]dy
-[6]0      [7]0      [8]1
-
-
-ta[0]=ar[0]*ar[0]+ar[1]*ar[3]+ar[2]*ar[6]
-ta[1]=ar[0]*ar[1]+ar[1]*ar[4]+ar[2]*ar[7]
-ta[2]=ar[0]*ar[2]+ar[1]*ar[5]+ar[2]*ar[8]
-ta[3]=ar[3]*ar[0]+ar[4]*ar[3]+ar[5]*ar[6]
-ta[4]=ar[3]*ar[1]+ar[4]*ar[4]+ar[5]*ar[7]
-ta[5]=ar[3]*ar[2]+ar[4]*ar[5]+ar[5]*ar[8]
-ta[6]=ar[6]*ar[0]+ar[7]*ar[3]+ar[8]*ar[6]
-ta[7]=ar[6]*ar[1]+ar[7]*ar[4]+ar[8]*ar[7]
-ta[8]=ar[6]*ar[2]+ar[7]*ar[5]+ar[8]*ar[8]
-*/
