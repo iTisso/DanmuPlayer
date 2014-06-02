@@ -19,22 +19,33 @@ function optioneles(){
 ?>
                 <div>
                      <h3> 播放器设置</h3>
+                     <div>
                       <span>默认隐藏边栏:<div switch name="DefaultHideSideBar"></div></span>
                       <span>进度条显示弹幕密度:<div switch name="ProgressDanmumark"></div></span>
+                      </div>
                  </div>
                  <div>
-                     <h3> 效果</h3>
+                     <h3> 普通弹幕</h3>
+                     <div>
+                     <span>单独渲染:<div switch name="DivCommonDanmu"></div></span>
+                    <span>描边宽度:<div range name="StorkeWidth" min=0 max=2 defalut=1></div></span>
+                    <span>阴影厚度:<div range name="ShadowWidth" min=0 max=10 defalut=0></div></span>
                       <span>弹幕实时渲染:<div switch name="RealtimeVary"></div></span>
+                      </div>
                  </div>
                   <div>
                      <h3> 高级弹幕</h3>
-                      <span>变速调试:<div range name="PlaySpeed" min=0.2 max=1.5></div></span>
+                     <div>
+                      <span>变速调试:<div range name="PlaySpeed" min=0.2 max=1.5 default=1></div></span>
                       <span>2D高级弹幕:<div switch name="TwoDCodeDanmu"></div></span>
                        <span>3D高级弹幕:<div switch name="ThreeDCodeDanmu"></div></span>
+                       </div>
                  </div>
                  <div>
                       <h3>开发</h3>
+                      <div>
                       <span>弹幕层Debug:<div switch name="Debug"></div></span>
+                      </div>
                  </div>
 <?php
 }

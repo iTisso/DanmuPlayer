@@ -16,7 +16,6 @@ function d_selectall(query) {
 function c_ele(tag) {
 	return document.createElement(tag);
 }
-
 var _string_ = {
 	removesidespace: function(string) {
 		if (typeof string == "string") {
@@ -76,7 +75,7 @@ function getMin_Sec_By_Million(time) {
 	return t;
 }
 function setOption(name, value) {
-	if ((typeof name != "string") || (typeof value != "string")) {
+	if ((typeof name != "string")) {
 		console.log("错误的设置参数");
 		return false;
 	}
@@ -89,14 +88,14 @@ function setOption(name, value) {
 /*function changeTabTo(){
 
 }*/
-function makeTabGroup(obj){//[[tab1,block1],[tab2,block2]]
-	if(!window.TabGroups)window.TabGroups=[];
-	if(obj){
-		for(var i=0;i<obj.length;i++){
-			obj[i][0].pointTo=obj[i][1];
-			obj[i][0].TabGroup=obj;
-			obj[i][0].onmousedown=function(e){
-				if(e.button!=0)return;
+function makeTabGroup(obj) { //[[tab1,block1],[tab2,block2]]
+	if (!window.TabGroups) window.TabGroups = [];
+	if (obj) {
+		for (var i = 0; i < obj.length; i++) {
+			obj[i][0].pointTo = obj[i][1];
+			obj[i][0].TabGroup = obj;
+			obj[i][0].onmousedown = function(e) {
+				if (e.button != 0) return;
 				for (var inn = 0; inn < this.TabGroup.length; inn++) {
 					this.TabGroup[inn][1].style.display = "none";
 				}
@@ -189,6 +188,7 @@ function createswitch(in_name, in_bool, in_colorleft, in_colorright, out_object)
 	}
 	e.setAttribute("type", "switch");
 	e.event = new Object();
+	e.event.disabled = false;
 	e.event.on = function() {
 		e.event.bool = true;
 		e.getElementsByTagName("div")[0].style.left = e.offsetWidth - 15 + "px";
@@ -209,6 +209,7 @@ function createswitch(in_name, in_bool, in_colorleft, in_colorright, out_object)
 		in_colorright = "#616161";
 	}
 	e.onclick = function() {
+		if (e.event.disabled) return;
 		if (e.event.bool) {
 			e.event.off();
 		} else {
@@ -219,7 +220,8 @@ function createswitch(in_name, in_bool, in_colorleft, in_colorright, out_object)
 	/*e.style.width = "70px";
 	e.style.height = "20px";*/
 	//e.style.overflow = "hidden";
-	e.innerHTML = '<div class="switch_center" style="left:' + (e.event.bool ? "55px": "0px") + '""><div class="switch_left" style="background-color:' + in_colorleft + '"></div><div class="switch_right" style="background-color:' + in_colorright + '"></div></div>';
+	e.innerHTML = '<div class="switch_center" style="left:' + (e.event.bool ? "41px": "0px") + '""><div class="switch_left" style="background-color:' + in_colorleft + '"></div><div class="switch_right" style="background-color:' + in_colorright + '"></div></div>';
+
 	if (!out_object) {
 		return e;
 	}
@@ -243,10 +245,10 @@ function createRange(in_name, min, max, value, out_object) {
 	bg.className = "rangebg";
 	e.min = (min || min === 0) ? min: 0;
 	e.max = (max || max === 0) ? max: 1;
-	e.title = e.value = ((value || value === 0) ? value: (max + min) / 2);
+	e.title = e.value = ((value || value === 0) ? value: (e.defaultvalue ? e.defaultvalue: ((max + min) / 2)));
 	e.point.style.left = (e.value - e.min) / (e.max - e.min) * 251 + "px";
 	e.
-default = e.value;
+default = (e.defaultvalue || e.defaultvalue === 0) ? e.defaultvalue: e.value;
 	e.onmousedown = function(e) {
 		e.preventDefault();
 		if (e.button === 0) {
@@ -254,7 +256,6 @@ default = e.value;
 			var x = e.offsetX || e.layerX;
 			this.point.style.left = x + "px";
 			var va = this.min + (x / this.offsetWidth) * (this.max - this.min);
-			//this.title=Math.round((this.value=va)*100)/100;
 			this.sendValue(this.name, va);
 		} else if (e.button == 2) {
 			var x = this.offsetWidth * (this.
@@ -278,7 +279,7 @@ default = e.value;
 			//this.title=Math.round((this.value=va)*100)/100;
 			this.sendValue(this.name, va);
 		}
-		this.title =(this.min + (x / this.offsetWidth) * (this.max - this.min)).toFixed(3);
+		this.title = (this.min + (x / this.offsetWidth) * (this.max - this.min)).toFixed(3);
 	}
 	e.onmouseleave = function() {
 		this.ranging = false;
@@ -343,11 +344,11 @@ function initPlayer(_in_videoid) {
 	var width, height;
 	var player = {},
 	intervals = {},
-	timeouts={},
+	timeouts = {},
 	//intervalfuns = {},
 	controlfuns = {};
 	localstoragesupport = window.localStorage ? true: false;
-	timeouts.fun={};
+	timeouts.fun = {};
 	var danmulist = [],
 	danmufuns = {},
 	danmuobjlist = [],
@@ -358,17 +359,18 @@ function initPlayer(_in_videoid) {
 		bottom: [],
 		top: []
 	},
-	moverInterval = 1000 / 59,
+	moverInterval = 1000 / 60,
 	moveTime = 5000,
 	tunnelheight = 0,
 	onshowdanmulist = [],
 	timeline = [],
 	danmucount,
 	timepoint = 0,
-	danmucontainer;
+	danmucontainer,
+	divdanmucontainer = [];
 	var danmufirer, superdanmu;
 
-	var zimulist=[],
+	var zimulist = [],
 	zimucontainer;
 
 	player.assvar = {};
@@ -378,7 +380,7 @@ function initPlayer(_in_videoid) {
 		type: 0
 	};
 
-	var COL, Glib, AnimationFrame,moverAnimation;
+	var COL, Glib, AnimationFrame, moverAnimation;
 
 	function setdom() {
 		player.displaystat = "normal";
@@ -422,22 +424,23 @@ function initPlayer(_in_videoid) {
 		player.volumestat = d_select(player.mainbody, "#controler #volume #stat");
 		player.loadinfo.ctx = player.loadinfo.getContext("2d");
 
-		makeTabGroup([[player.danmulistbutton,d_select(player.sidebar,"#danmupool")],[player.superdanmubutton,d_select(player.sidebar,"#superdanmueditor")],[player.optionbutton,player.optionpannel]]);
-		makeTabGroup([[d_select(player.sidebar,"#chooseText"),d_select(player.sidebar,"#SuperTextTab")],[d_select(player.sidebar,"#chooseCode"),d_select(player.sidebar,"#SupeCodeTab")]]);
+		makeTabGroup([[player.danmulistbutton, d_select(player.sidebar, "#danmupool")], [player.superdanmubutton, d_select(player.sidebar, "#superdanmueditor")], [player.optionbutton, player.optionpannel]]);
+		makeTabGroup([[d_select(player.sidebar, "#chooseText"), d_select(player.sidebar, "#SuperTextTab")], [d_select(player.sidebar, "#chooseCode"), d_select(player.sidebar, "#SupeCodeTab")]]);
 		player.loadinfo.height = player.progress.offsetHeight;
-		var dcm=player.danmuContextMenu=c_ele("div");
-		dcm.className="textContextMenu";
+		var dcm = player.danmuContextMenu = c_ele("div");
+		dcm.className = "textContextMenu";
 		initCOL();
 	}
-	function initCOL(){
-		COL = newCOL();
+	function initCOL() {
+		window.COL = COL = newCOL();
 		COL.font.color = "#ffffff";
 		COL.font.fontFamily = "'黑体'";
 		COL.setCanvas(player.danmulayer);
 		COL.autoClear = true;
 		Glib = getGraphlib(COL);
 		initTextDanmuContainer();
-
+		COL.simpleMouseCheckMode = true;
+		COL.MatrixTransform.on();
 	}
 	function initTextDanmuContainer() {
 		/*普通弹幕层*/
@@ -445,45 +448,35 @@ function initPlayer(_in_videoid) {
 		danmucontainer.name = "danmucontainer";
 		danmucontainer.needsort = false;
 		COL.document.addChild(danmucontainer);
-		danmucontainer.zindex(2);
+		danmucontainer.zindex(200);
 		/*字幕弹幕层*/
 		zimucontainer = COL.Graph.New();
 		danmucontainer.name = "zimucontainer";
 		COL.document.addChild(zimucontainer);
-		zimucontainer.zindex(0);
-	}
-	/*function changetab(tab) {
-		for (var i = 0; i < player.ctrlbuttons.length; i++) {
-			if (player.ctrlbuttons[i].id == tab) {
-				player.tabpages[i].style.display = "block";
-			} else {
-				player.tabpages[i].style.display = "none";
-			}
+		zimucontainer.zindex(2);
 
-		}
-	}*/
+	}
 	function setPlayOption() {
 		player.o.recycle = false;
-
-		//player.o.playspeed = 1;
 	}
 	function setDefaultOption() {
-		var ver="0.3.1";
+		var ver = "0.3.2";
 		if (getOption("DefaultSetted") != ver) {
-			var settings={
-			DefaultSetted:"true",
-			TwoDCodeDanmu:"true",
-			ThreeDCodeDanmu:"true",
-			PlaySpeed:"1",
-			ProgressDanmumark:"false"
-		}
-		for(var st in settings){
-			if(getOption(st)==false){
-				setOption(st, settings[st]);
+			var settings = {
+				DefaultSetted: "true",
+				TwoDCodeDanmu: "true",
+				ThreeDCodeDanmu: "true",
+				PlaySpeed: "1",
+				ProgressDanmumark: "false",
+				DivCommonDanmu: "true"
 			}
-		}
+			for (var st in settings) {
+				if (getOption(st) == false) {
+					setOption(st, settings[st]);
+				}
+			}
 			setOption("DefaultSetted", ver);
-			
+
 		}
 	}
 	function loadoption() {
@@ -494,41 +487,51 @@ function initPlayer(_in_videoid) {
 		player.assvar = {},
 		player.switchs = {};
 		//player.ZiMu={};
-		player.assvar.danmufeng=0;
-		player.assvar.danmumark=COL.Graph.New({drawtype:"image"});
-		player.assvar.danmumark.drawfunction=function(ct){
+		player.assvar.danmufeng = 0;
+		player.assvar.danmumark = COL.Graph.New({
+			drawtype: "image"
+		});
+		var optioncategory = [],
+		tmpcategory = d_selectall(player.optionpannel, "h3"),
+		tmpoption = d_selectall(player.optionpannel, "h3+div");
+		for (var i = 0; i < tmpcategory.length; i++) {
+			optioncategory.push([tmpcategory[i], tmpoption[i]]);
+		}
+		makeTabGroup(optioncategory);
+		player.assvar.danmumark.drawfunction = function(ct) {
 			var Xw = player.loadinfo.width,
 			d = player.o.totaltime;
-			ct.clearRect(0,0,Xw,25);
+			ct.clearRect(0, 0, Xw, 25);
+			ct.beginPath();
+			var left = 0,
+			color, cutnum;
+			for (var time in danmuarray) {
+				ct.save();
+				left = time / 1000 / d * Xw;
+				cutnum = danmuarray[time].length;
+				if (cutnum > player.assvar.danmufeng) player.assvar.danmufeng = cutnum;
+				//color=(cutnum/player.assvar.danmufeng*255).toFixed();
 				ct.beginPath();
-				var left=0,color,cutnum;
-				for(var time in danmuarray){
-					ct.save();
-					left=time/1000/ d * Xw;
-					cutnum=danmuarray[time].length;
-					if(cutnum>player.assvar.danmufeng)player.assvar.danmufeng=cutnum;
-					//color=(cutnum/player.assvar.danmufeng*255).toFixed();
-					ct.beginPath();
-					//ct.strokeStyle="rgba("+color+","+color+","+color+",1)";
-					ct.strokeStyle="rgba(125, 156, 156,"+(cutnum/player.assvar.danmufeng+0.5)+")";
-					ct.moveTo(left,0);
-					ct.lineTo(left,cutnum/player.assvar.danmufeng*20+1);
-					ct.stroke();
-					ct.restore();
-				}
-				//ct.stroke();
+				//ct.strokeStyle="rgba("+color+","+color+","+color+",1)";
+				ct.strokeStyle = "rgba(125, 156, 156," + (cutnum / player.assvar.danmufeng + 0.5) + ")";
+				ct.moveTo(left, 0);
+				ct.lineTo(left, cutnum / player.assvar.danmufeng * 20 + 1);
+				ct.stroke();
+				ct.restore();
+			}
+			//ct.stroke();
 		}
 		controlfuns.sidebar_show();
-		if (getOption("Debug") == "true") {
+		/*if (getOption("Debug") == "true") {
 			COL.Debug.on();
-		}
+		}*/
 		if (getOption("DefaultHideSideBar") == "true") {
 			controlfuns.sidebar_hide();
 		}
-		if(getOption("ProgressDanmumark") == "true"){
-			player.o.ProgressDanmumark=true;
-		}
-		player.o.RealtimeVary = getOption("RealtimeVary") == "true" ? true: false;
+		/*if (getOption("ProgressDanmumark") == "true") {
+			player.o.ProgressDanmumark = true;
+		}*/
+		//player.o.RealtimeVary = getOption("RealtimeVary") == "true" ? true: false;
 		fitdanmulayer();
 	}
 	function loadvideo() {
@@ -681,6 +684,7 @@ function initPlayer(_in_videoid) {
 					y: danmucontainer.childNode[i].tunnelobj[2]
 				});
 			}
+			danmucontainer.childNode[i].setMatrix();
 		}
 		controlfuns.refreshDanmuMark();
 	}
@@ -691,8 +695,28 @@ function initPlayer(_in_videoid) {
 			var name = sw.getAttribute("name");
 			var bool = (getOption(name) == "true") ? true: false;
 			createswitch(name, bool, null, null, sw);
+
+			sw.disable = function() {
+				this.event.disabled = true;
+				addEleClass(this, "gray");
+			}
+			sw.enable = function() {
+				this.event.disabled = false;
+				removeEleClass(this, "gray");
+			}
+			//sw.disable();
 			player.switchs[name] = sw;
 		}
+		for (var sn in player.switchs) {
+			if (switchCenter[sn]) {
+				if (player.switchs[sn].event.bool) {
+					switchCenter[sn].on();
+				} else {
+					switchCenter[sn].off();
+				}
+			}
+		}
+
 	}
 	function initRange() {
 		var ranges = d_selectall(player.optionpannel, "div[range]");
@@ -702,7 +726,9 @@ function initPlayer(_in_videoid) {
 			var name = rg.getAttribute("name");
 			var min = Number(rg.getAttribute("min"));
 			var max = Number(rg.getAttribute("max"));
-			var value = Number(getOption(name));
+			var defaultvalue = Number(rg.getAttribute("default"));
+			rg.defaultvalue = defaultvalue;
+			var value = Number(getOption(name)) || defaultvalue;
 			createRange(name, min, max, value, rg);
 			rg.sendValue = function(name, value) {
 				if (rangeCenter[name]) {
@@ -711,6 +737,11 @@ function initPlayer(_in_videoid) {
 			}
 			player.ranges[name] = rg;
 		}
+		for (var rg in player.ranges) {
+			if (rangeCenter[rg]) {
+				rangeCenter[rg](player.ranges[rg].value);
+			}
+		}
 	}
 	function initInput() {
 		var inputs = d_selectall(player.sidebar, "input[name]");
@@ -718,7 +749,7 @@ function initPlayer(_in_videoid) {
 		for (var i = 0; i < inputs.length; i++) {
 			var ipt = inputs[i];
 			var name = ipt.getAttribute("name");
-			player.inputs[name]=ipt;
+			player.inputs[name] = ipt;
 			ipt.onchange = function() {
 				if (inputCenter[name]) {
 					inputCenter[name](ipt.value);
@@ -731,7 +762,7 @@ function initPlayer(_in_videoid) {
 			clearInterval(intervals.timer);
 			intervals.timer = 0;
 		}
-		if (!player.assvar.isPlaying||player.video.paused) return;
+		if (!player.assvar.isPlaying || player.video.paused) return;
 		if (t >= timepoint) {
 			for (var i = timepoint; i <= t; i += 10) {
 				if (timeline[i]) danmufuns.fire(i);
@@ -741,7 +772,7 @@ function initPlayer(_in_videoid) {
 		}
 		timepoint = t + 10;
 		intervals.timer = setInterval(function() {
-			if (!player.assvar.isPlaying||player.video.paused) return;
+			if (!player.assvar.isPlaying || player.video.paused) return;
 			if (timeline[timepoint]) {
 				danmufuns.fire(timepoint);
 			}
@@ -762,69 +793,22 @@ function initPlayer(_in_videoid) {
 	}
 	danmufuns = {
 		initContextMenu: function() {
-			player.ContextMenu = Glib.getGraphObj("rect", {
-				backgroundColor: "rgba(255,255,255,0.8)",
-				borderWidth: 0.2,
-				borderColor: "rgba(211, 188, 188, 0.91)",
-				width: 100,
-				height: 70,
-				x: 0,
-				y: 0,
-				display: false
-			});
-			player.ContextMenu.zindex(20);
-			player.ContextMenu.content = COL.Graph.NewTextObj("somethig", 16, {
-				autoSize: false,
-				width: 100,
-				height: 20,
-				x: 0,
-				y: 0,
-				overflow: "hidden",
-				color: "rgb(44, 123, 138)"
-			});
+			/*弹幕右键菜单*/
+			player.ContextMenu = c_ele("div");
+			player.ContextMenu.content = c_ele("span");
+			player.ContextMenu.plusone = c_ele("div");
+			player.ContextMenu.copy = c_ele("div");
 
-			player.ContextMenu.plusone = COL.Graph.NewTextObj("         +1", 16, {
-				autoSize: false,
-				width: 100,
-				height: 20,
-				x: 0,
-				y: 21,
-				overflow: "hidden"
-			});
+			player.ContextMenu.className = "danmuContextMenu";
+			player.ContextMenu.plusone.innerHTML = "+1";
+			player.ContextMenu.copy.innerHTML = "复制";
+			player.ContextMenu.content.style.color = "rgb(44, 123, 138)";
 
-			player.ContextMenu.copy = COL.Graph.NewTextObj("       复制",16, {
-				autoSize: false,
-				width: 100,
-				height: 20,
-				x: 0,
-				y: 41,
-				overflow: "hidden"
-			});
-
-			COL.Graph.Eventable(player.ContextMenu);
-			COL.Graph.Eventable(player.ContextMenu.copy);
-			COL.Graph.Eventable(player.ContextMenu.plusone);
-
-			player.ContextMenu.addChild(player.ContextMenu.content);
-			player.ContextMenu.addChild(player.ContextMenu.plusone);
-			player.ContextMenu.addChild(player.ContextMenu.copy);
-			COL.document.addChild(player.ContextMenu);
-
-			player.ContextMenu.addEvent("mouseover",
-			function(e) {
-				e.stopPropagation();
-				if (e.target != player.ContextMenu) {
-					e.target.backgroundColor = "#66ccff";
-				}
-			});
-			player.ContextMenu.addEvent("mouseout",
-			function(e) {
-				e.stopPropagation();
-				if (e.target != player.ContextMenu) {
-					e.target.backgroundColor = null;
-				}
-			});
-			player.ContextMenu.addEvent("click",
+			player.ContextMenu.appendChild(player.ContextMenu.content);
+			player.ContextMenu.appendChild(player.ContextMenu.plusone);
+			player.ContextMenu.appendChild(player.ContextMenu.copy);
+			player.danmuframe.appendChild(player.ContextMenu);
+			aEL(player.ContextMenu, "click",
 			function(e) {
 				e.stopPropagation();
 				if (e.target == player.ContextMenu.plusone) {
@@ -836,116 +820,213 @@ function initPlayer(_in_videoid) {
 					danmufuns.hideContextMenu();
 				}
 			});
+			aEL(player.ContextMenu, "contextmenu",
+			function(e) {
+				e.stopPropagation();
+				e.preventDefault();
+			});
 		},
 		showContextMenu: function(textobj, danmuobj) {
-			player.ContextMenu.display = true;
+			player.ContextMenu.style.display = "block";
 			player.ContextMenu.danmuobj = danmuobj;
-			player.ContextMenu.content.setText(danmuobj.c);
+			player.ContextMenu.content.innerHTML = danmuobj.c;
 			var x = COL.mouseX,
 			y = COL.mouseY;
-			if (x > width - player.ContextMenu.width) x = width - player.ContextMenu.width;
-			if (y > tunnelheight - player.ContextMenu.height) y = tunnelheight - player.ContextMenu.height;
-			player.ContextMenu.x = x;
-			player.ContextMenu.y = y;
+			if (x > width - player.ContextMenu.offsetWidth) x = width - player.ContextMenu.offsetWidth;
+			if (y > tunnelheight - player.ContextMenu.offsetHeight) y = tunnelheight - player.ContextMenu.offsetHeight;
+			player.ContextMenu.style.left = x + "px";
+			player.ContextMenu.style.top = y + "px";
 		},
 		hideContextMenu: function() {
-			player.ContextMenu.display = false;
+			if (player.ContextMenu) player.ContextMenu.style.display = "none";
 		},
-		createCommonDanmu: function(danmuobj) {
-			//if (!interval.movedanmu) return;
-			if (danmuobj.hasfirstshowed === 0) {
-				danmuobj.hasfirstshowed = 1;
-			} else if (danmuobj.hasfirstshowed == 1) {
-				danmuobj.hasfirstshowed = null;
-				return;
-			}
-			//console.log(1)
-			var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
-			var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
-			var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s , {
-				color: color,
-				textborderColor: bordercolor,
-				textborderWidth: 0.6,
-				type: danmuobj.ty,
-				time: danmuobj.t,
-				fontWeight: 600,
-				realtimeVary: player.o.RealtimeVary
-			});
-			TextDanmu.tunnelobj =danmufuns.getTunnel(danmuobj.ty,TextDanmu.lineHeight);
-			switch (danmuobj.ty) {
-			case 0:
-				{
-					TextDanmu.set({
-						x:
-						width,
-						y: TextDanmu.tunnelobj[2]
-					});
-					break;
-				}
-			case 1:
-				{
-					TextDanmu.set({
-						x:
-						-TextDanmu.width,
-						y: TextDanmu.tunnelobj[2]
-					});
-					break;
-				}
-			case 2:
-				{
-					TextDanmu.setPositionPoint(TextDanmu.width / 2, TextDanmu.height);
-					TextDanmu.set({
-						x: width / 2,
-						y: tunnelheight - TextDanmu.tunnelobj[2]
-					});
-					break;
-				}
-			case 3:
-				{
-					TextDanmu.setPositionPoint(TextDanmu.width / 2, 0);
-					TextDanmu.set({
-						x: width / 2,
-						y: TextDanmu.tunnelobj[2]
-					});
-					break;
-				}
-			default:
-				{
+		createCommonDanmufun: {
+			canvas: function(danmuobj) {
+				//if (!interval.movedanmu) return;
+				if (danmuobj.hasfirstshowed === 0) {
+					danmuobj.hasfirstshowed = 1;
+				} else if (danmuobj.hasfirstshowed == 1) {
+					danmuobj.hasfirstshowed = null;
 					return;
 				}
-			}
-			if (danmuobj.sended) {
-				var lineset=TextDanmu.lineHeight*TextDanmu.varylist.length - 5;
-				TextDanmu.afterdrawfun =eval('function sendedline(ct) {ct.strokeStyle = "#66ccff";ct.moveTo(0,'+lineset+');ct.lineTo('+TextDanmu.width+', '+lineset+');ct.stroke();}') ;
-			}
-			TextDanmu.danmuobj = danmuobj;
-			COL.Graph.Eventable(TextDanmu);
-			TextDanmu.addEvent("mousedown",
-			function(e) {
-				switch (e.button) {
+				var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
+				var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
+				var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s, {
+					color: color,
+					textborderColor: bordercolor,
+					textborderWidth: player.o.StorkeWidth,
+					type: danmuobj.ty,
+					time: danmuobj.t,
+					fontWeight: 600,
+					realtimeVary: player.o.RealtimeVary,
+					shadowBlur: player.o.ShadowWidth,
+					shadowColor: (danmuobj.co == "000000") ? "#fff": "#000"
+				});
+				TextDanmu.tunnelobj = danmufuns.getTunnel(danmuobj.ty, TextDanmu.lineHeight);
+				switch (danmuobj.ty) {
 				case 0:
 					{
-						if (player.video.paused) {
-							danmufuns.start();
-							player.video.play();
-						} else {
-							player.video.pause();
-						}
+						TextDanmu.set({
+							x:
+							width,
+							y: TextDanmu.tunnelobj[2]
+						});
+						break;
+					}
+				case 1:
+					{
+						TextDanmu.set({
+							x:
+							-TextDanmu.width,
+							y: TextDanmu.tunnelobj[2]
+						});
 						break;
 					}
 				case 2:
 					{
-						//player.video.pause();
-						danmufuns.showContextMenu(TextDanmu, danmuobj);
+						TextDanmu.setPositionPoint(TextDanmu.width / 2, TextDanmu.height);
+						TextDanmu.set({
+							x: width / 2,
+							y: tunnelheight - TextDanmu.tunnelobj[2]
+						});
+						break;
+					}
+				case 3:
+					{
+						TextDanmu.setPositionPoint(TextDanmu.width / 2, 0);
+						TextDanmu.set({
+							x: width / 2,
+							y: TextDanmu.tunnelobj[2]
+						});
+						break;
+					}
+				default:
+					{
+						return;
+					}
+
+				}
+				if (danmuobj.sended) {
+					var lineset = TextDanmu.lineHeight * TextDanmu.varylist.length - 10;
+					TextDanmu.afterdrawfun = eval('function sendedline(ct) {;ct.strokeStyle = "#66ccff";ct.moveTo(0,' + lineset + ');ct.lineTo(' + TextDanmu.width + ', ' + lineset + ');ct.stroke();}');
+				}
+				TextDanmu.danmuobj = danmuobj;
+				COL.Graph.Eventable(TextDanmu);
+				TextDanmu.addEvent("mousedown",
+				function(e) {
+					switch (e.button) {
+					case 0:
+						{
+							if (player.video.paused) {
+								danmufuns.start();
+								player.video.play();
+							} else {
+								player.video.pause();
+							}
+							break;
+						}
+					case 2:
+						{
+							danmufuns.showContextMenu(TextDanmu, danmuobj);
+						}
+					}
+				});
+				TextDanmu.setMatrix();
+				danmucontainer.addChild(TextDanmu);
+			},
+			div: function(danmuobj) {
+				if (danmuobj.hasfirstshowed === 0) {
+					danmuobj.hasfirstshowed = 1;
+				} else if (danmuobj.hasfirstshowed == 1) {
+					danmuobj.hasfirstshowed = null;
+					return;
+				}
+				var color = isHexColor(danmuobj.co) ? ("#" + danmuobj.co) : "#fff";
+				var bordercolor = (danmuobj.co == "000000") ? "#fff": "#000";
+				/*var TextDanmu = COL.Graph.NewTextObj(danmuobj.c, danmuobj.s, {
+				textborderColor: bordercolor,
+				textborderWidth: 0.6,
+				fontWeight: 600,
+			});*/
+				var TextDanmu = c_ele("div");
+				divdanmucontainer.push(TextDanmu);
+				TextDanmu.innerHTML = danmuobj.c.replace(/\\n/g, "<br>");
+				TextDanmu.style.position = "absolute";
+				TextDanmu.style.color = color;
+				TextDanmu.className = "divtextdanmu";
+				TextDanmu.type = danmuobj.ty;
+				TextDanmu.time = danmuobj.t;
+				TextDanmu.style.fontSize = danmuobj.s - 5 + "px";
+				TextDanmu.style.textAlign = "left";
+
+				TextDanmu.style.textShadow = "-" + player.o.StorkeWidth + "px 0 " + bordercolor + ",0px " + player.o.StorkeWidth + "px " + bordercolor + "," + player.o.StorkeWidth + "px 0 " + bordercolor + ",0px -" + player.o.StorkeWidth + "px " + bordercolor + ",0 0 3px black";
+
+				player.danmuframe.appendChild(TextDanmu);
+				TextDanmu.tunnelobj = danmufuns.getTunnel(danmuobj.ty, TextDanmu.offsetHeight);
+				switch (danmuobj.ty) {
+				case 0:
+					{
+						TextDanmu.style.right = -TextDanmu.offsetWidth + "px";
+						TextDanmu.style.top = TextDanmu.tunnelobj[2] + "px";
+						break;
+					}
+				case 1:
+					{
+						TextDanmu.style.left = -TextDanmu.offsetWidth + "px";
+						TextDanmu.style.top = TextDanmu.tunnelobj[2] + "px";
+						break;
+					}
+				case 2:
+					{
+						addEleClass(TextDanmu, "divbottomdanmu");
+						TextDanmu.style.bottom = TextDanmu.tunnelobj[2] + "px";
+						TextDanmu.style.left ="calc(50% - "+TextDanmu.offsetWidth/2+"px)"; /*(width - TextDanmu.offsetWidth) / 2 + "px";*/
+						break;
+					}
+				case 3:
+					{
+						addEleClass(TextDanmu, "divtopdanmu");
+						TextDanmu.style.top = TextDanmu.tunnelobj[2] + "px";
+						TextDanmu.style.left ="calc(50% - "+TextDanmu.offsetWidth/2+"px)";
+						break;
+					}
+				default:
+					{
+						return;
 					}
 				}
-			});
-			danmucontainer.addChild(TextDanmu);
+				if (danmuobj.sended) {
+					TextDanmu.style.borderBottom = "1px solid #66ccff";
+				}
+				TextDanmu.danmuobj = danmuobj;
+				TextDanmu.oncontextmenu = function(e) {
+					e.preventDefault();
+				}
+				aEL(TextDanmu, "mousedown",
+				function(e) {
+					switch (e.button) {
+					case 0:
+						{
+							if (player.video.paused) {
+								danmufuns.start();
+								player.video.play();
+							} else {
+								player.video.pause();
+							}
+							break;
+						}
+					case 2:
+						{
+							danmufuns.showContextMenu(TextDanmu, danmuobj);
+						}
+					}
+				});
+			}
 		},
+		createCommonDanmu: null,
 		send: function(content) {
 			var c = content ? content: player.danmuinput.value;
-			c=c.replace(/\\n/g,"\n");
-			console.log(c)
+			c = c.replace(/\\n/g, "\n");
 			if (_string_.removesidespace(c) != "") {
 				//console.log("发送弹幕:" + player.danmuinput.value);
 				if (!content) {
@@ -1012,35 +1093,36 @@ function initPlayer(_in_videoid) {
 
 			}
 		},
-		showtextdanmu:function(){
-			danmucontainer.display=player.o.textdanmu=true;
+		showtextdanmu: function() {
+			danmucontainer.display = player.o.textdanmu = true;
 			if (!AnimationFrame) {
 				function danmurefresh() {
-					
-					AnimationFrame = requestAnimationFrame(danmurefresh);COL.draw();
+
+					AnimationFrame = requestAnimationFrame(danmurefresh);
+					COL.draw();
 				}
-				AnimationFrame=requestAnimationFrame(danmurefresh);
+				AnimationFrame = requestAnimationFrame(danmurefresh);
 				player.danmuframe.style.display = "block";
 			}
-			if(!moverAnimation){
+			if (!moverAnimation) {
 				function movedanmu() {
 					moverAnimation = requestAnimationFrame(movedanmu);
-						danmufuns.mover();
+					danmufuns.mover();
 				}
-				moverAnimation=requestAnimationFrame(movedanmu);
+				moverAnimation = requestAnimationFrame(movedanmu);
 			}
 		},
-		hidetextdanmu:function(){
-			danmucontainer.display=player.o.textdanmu=false;
+		hidetextdanmu: function() {
+			danmucontainer.display = player.o.textdanmu = false;
 			if (AnimationFrame) {
 				danmucontainer.display = false;
 				cancelAnimationFrame(AnimationFrame);
 				AnimationFrame = 0;
 				player.danmuframe.style.display = "none";
 			}
-			if(moverAnimation){
+			if (moverAnimation) {
 				cancelAnimationFrame(moverAnimation);
-				moverAnimation=0;
+				moverAnimation = 0;
 			}
 		},
 		show: function() {
@@ -1108,17 +1190,32 @@ function initPlayer(_in_videoid) {
 			if (!danmuarray[danmuobj.t]) danmuarray[danmuobj.t] = [];
 			danmuarray[danmuobj.t].push(danmuobj);
 		},
-		clear: function() {
-			for (var i in danmucontainer.childNode) {
-				COL.Graph.Delete(danmucontainer.childNode[i]);
+		clearfun: {
+			div: function() {
+				for (var i = divdanmucontainer.length; i--;) {
+					player.danmuframe.removeChild(divdanmucontainer[i]);
+					divdanmucontainer.splice(i, 1);
+				}
+				danmutunnel = {
+					right: [],
+					left: [],
+					bottom: [],
+					top: []
+				};
+			},
+			canvas: function() {
+				for (var i in danmucontainer.childNode) {
+					COL.Graph.Delete(danmucontainer.childNode[i]);
+				}
+				danmutunnel = {
+					right: [],
+					left: [],
+					bottom: [],
+					top: []
+				};
 			}
-			danmutunnel = {
-				right: [],
-				left: [],
-				bottom: [],
-				top: []
-			};
 		},
+		clear: function() {},
 		start: function() {
 			timepoint = getVideoMillionSec();
 			newTimePiece(timepoint);
@@ -1139,58 +1236,104 @@ function initPlayer(_in_videoid) {
 			},
 			false);*/
 		},
-		mover: function() {
-			if (player.assvar.isPlaying) {
-				var nowtime = (player.video.currentTime * 1000).toFixed();
-				for (var i = 0; i < danmucontainer.drawlist.length; i++) {
-					var node = danmucontainer.drawlist[i];
-					if (!node) continue;
-					switch (node.type) {
-					case 0:
-						{
-							var roadLength = width + node.width;
-							node.x = roadLength * (1 - (nowtime - node.time) / moveTime) - node.width;
-							if (node.tunnelobj && node.x < width - node.width - 150) {
-								danmutunnel.right[node.tunnelobj[1]][node.tunnelobj[2]] = null;
-								node.tunnelobj = null;
-							} else if (node.x < -node.width) {
-								COL.Graph.Delete(node);
+		moverfun: {
+			div: function() {
+				if (player.assvar.isPlaying) {
+					var nowtime = (player.video.currentTime * 1000).toFixed();
+					for (var i = divdanmucontainer.length-1; i>=0;i--) {
+						var node = divdanmucontainer[i];
+						switch (node.type) {
+						case 0:
+						case 1:
+							{
+								var tmp = node.type ? "left": "right";
+								var nodewidth = node.offsetWidth,
+								roadLength = width + nodewidth,
+								hasgone=(roadLength * ((nowtime - node.time) / moveTime / width * 520) - nodewidth).toFixed();
+								node.style[tmp] = hasgone + "px";
+								if (node.tunnelobj &&hasgone> 150) {
+									danmutunnel[tmp][node.tunnelobj[1]][node.tunnelobj[2]] = null;
+									node.tunnelobj = null;
+								} else if (hasgone> width) {
+									divdanmucontainer.splice(i, 1);
+									player.danmuframe.removeChild(node);
+									delete node;
+									continue;
+								}
+								break;
 							}
-							break;
+						case 2:
+						case 3:
+							{
+								var tmp = node.type == 2 ? "bottom": "top";
+								if (nowtime - node.time > moveTime) {
+									danmutunnel[tmp][node.tunnelobj[1]][node.tunnelobj[2]] = null;
+									divdanmucontainer.splice(i, 1);
+									player.danmuframe.removeChild(node);
+									delete node;
+									continue;
+								}
+								break;
+							}
 						}
-					case 1:
-						{
-							var roadLength = width + node.width;
-							node.x = roadLength * (nowtime - node.time) / moveTime - node.width;
-							if (node.tunnelobj && node.x > 150) {
-								danmutunnel.left[node.tunnelobj[1]][node.tunnelobj[2]] = null;
-								node.tunnelobj = null;
-							} else if (node.x > width) {
-								COL.Graph.Delete(node);
+					}
+				}
+			},
+			canvas: function() {
+				if (player.assvar.isPlaying) {
+					var nowtime = (player.video.currentTime * 1000).toFixed();
+					for (var i = 0; i < danmucontainer.drawlist.length; i++) {
+						var node = danmucontainer.drawlist[i];
+						if (!node) continue;
+						switch (node.type) {
+						case 0:
+							{
+								var roadLength = width + node.width;
+								node.x = roadLength * (1 - (nowtime - node.time) / moveTime / width * 520) - node.width;
+								if (node.tunnelobj && node.x < width - node.width - 150) {
+									danmutunnel.right[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+									node.tunnelobj = null;
+								} else if (node.x < -node.width) {
+									COL.Graph.Delete(node);
+								}
+								node.setMatrix();
+								break;
 							}
-							break;
-						}
-					case 2:
-						{
-							if (nowtime - node.time > moveTime) {
-								COL.Graph.Delete(node);
-								danmutunnel.bottom[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+						case 1:
+							{
+								var roadLength = width + node.width;
+								node.x = roadLength * (nowtime - node.time) / moveTime / width * 520 - node.width;
+								if (node.tunnelobj && node.x > 150) {
+									danmutunnel.left[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+									node.tunnelobj = null;
+								} else if (node.x > width) {
+									COL.Graph.Delete(node);
+								}
+								node.setMatrix();
+								break;
 							}
-							break;
-						}
-					case 3:
-						{
-							if (nowtime - node.time > moveTime) {
-								COL.Graph.Delete(node);
-								danmutunnel.top[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+						case 2:
+							{
+								if (nowtime - node.time > moveTime) {
+									COL.Graph.Delete(node);
+									danmutunnel.bottom[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+								}
+								break;
 							}
-							break;
+						case 3:
+							{
+								if (nowtime - node.time > moveTime) {
+									COL.Graph.Delete(node);
+									danmutunnel.top[node.tunnelobj[1]][node.tunnelobj[2]] = null;
+								}
+								break;
+							}
 						}
 					}
 				}
 			}
-
 		},
+		mover: function() {},
 		initnewDanmuObj: function(danmuobj) {
 			if (typeof danmuobj == "object") {
 				danmucount++;
@@ -1200,18 +1343,20 @@ function initPlayer(_in_videoid) {
 			}
 		},
 		fire: function(t) {
-			if (/*player.assvar.isPlaying && */danmuarray[t]) {
+			if (
+			/*player.assvar.isPlaying && */
+			danmuarray[t]) {
 				for (var i = 0; i < danmuarray[t].length; i++) {
 					var tmpd = danmuarray[t][i];
-					if (tmpd.ty <= 3&&tmpd.ty>=0) {
-						if(player.o.textdanmu==true){
+					if (tmpd.ty <= 3 && tmpd.ty >= 0) {
+						if (player.o.textdanmu == true && !document.hidden) {
 							danmufuns.createCommonDanmu(tmpd);
 						}
 					} else if (tmpd.ty == 4) {
 
-}else if(tmpd.ty==5){
-	tmpd.fun();
-}
+} else if (tmpd.ty == 5) {
+						tmpd.fun();
+					}
 				}
 			}
 		},
@@ -1235,11 +1380,11 @@ function initPlayer(_in_videoid) {
 			} else {
 				player.danmucount.innerHTML = "弹幕错误";
 			}
-			player.assvar.danmumark.drawpic(player.loadinfo.width,25,player.assvar.danmumark.drawfunction);
+			player.assvar.danmumark.drawpic(player.loadinfo.width, 25, player.assvar.danmumark.drawfunction);
 		},
-		zimurevolution:function(zinuobj){
+		zimurevolution: function(zinuobj) {
 
-		}
+}
 
 	}
 
@@ -1320,8 +1465,8 @@ function initPlayer(_in_videoid) {
 			player.volumestat.innerHTML = "Д";
 		}
 	}
-	controlfuns.refreshDanmuMark=function(){
-		player.assvar.danmumark.drawpic(player.loadinfo.width,25,player.assvar.danmumark.drawfunction);
+	controlfuns.refreshDanmuMark = function() {
+		player.assvar.danmumark.drawpic(player.loadinfo.width, 25, player.assvar.danmumark.drawfunction);
 	}
 	controlfuns.refreshprogresscanvas = function() {
 		if (player.loadinfo.ctx) {
@@ -1348,15 +1493,15 @@ function initPlayer(_in_videoid) {
 			ct.fillStyle = "#66CCFF";
 			ct.fillRect(0, 0, player.video.currentTime / d * Xw, 18);
 
-			if(player.o.ProgressDanmumark){
-				if(player.assvar.danmumark.imageobj){
+			if (player.o.ProgressDanmumark) {
+				if (player.assvar.danmumark.imageobj) {
 					ct.drawImage(player.assvar.danmumark.imageobj, 0, 0);
 				}
 
 			}
 
 			//绘制鼠标指着的时间
-			if (player.assvar.pointingtime>=0) {
+			if (player.assvar.pointingtime >= 0) {
 				var t = getMin_Sec(player.assvar.pointingtime),
 				x = player.assvar.pointingx;
 				if (x < 33) x = 33;
@@ -1446,26 +1591,56 @@ function initPlayer(_in_videoid) {
 				setOption("ThreeDCodeDanmu", "false");
 			}
 		},
-		ProgressDanmumark:{
-			on:function(){
-				player.o.ProgressDanmumark=true;
+		ProgressDanmumark: {
+			on: function() {
+				player.o.ProgressDanmumark = true;
 				controlfuns.refreshprogresscanvas();
 				setOption("ProgressDanmumark", "true");
 			},
-			off:function(){
-				player.o.ProgressDanmumark=false;
+			off: function() {
+				player.o.ProgressDanmumark = false;
 				controlfuns.refreshprogresscanvas();
 				setOption("ProgressDanmumark", "false");
+			}
+		},
+		DivCommonDanmu: {
+			on: function() {
+				player.o.divcommondanmu = true;
+				danmucontainer.display = false;
+				danmufuns.clear();
+				player.switchs["RealtimeVary"].disable();
+				danmufuns.mover = danmufuns.moverfun.div;
+				danmufuns.createCommonDanmu = danmufuns.createCommonDanmufun.div;
+				danmufuns.clear = danmufuns.clearfun.div;
+				setOption("DivCommonDanmu", "true");
+			},
+			off: function() {
+				player.o.divcommondanmu = false;
+				danmucontainer.display = true;
+				danmufuns.clear();
+				player.switchs["RealtimeVary"].enable();
+				danmufuns.mover = danmufuns.moverfun.canvas;
+				danmufuns.createCommonDanmu = danmufuns.createCommonDanmufun.canvas;
+				danmufuns.clear = danmufuns.clearfun.canvas;
+				setOption("DivCommonDanmu", "false");
 			}
 		}
 	};
 	rangeCenter = {
 		PlaySpeed: function(value) {
 			if (value > 0) player.video.playbackRate = value;
+		},
+		StorkeWidth: function(value) {
+			player.o.StorkeWidth = value;
+			setOption("StorkeWidth", value);
+		},
+		ShadowWidth: function(value) {
+			player.o.ShadowWidth = value;
+			setOption("ShadowWidth", value);
 		}
 	};
-	inputCenter={
-		relativeTo:function(value){
+	inputCenter = {
+		relativeTo: function(value) {
 			console.log(value);
 		}
 	};
@@ -1589,14 +1764,16 @@ function initPlayer(_in_videoid) {
 					break;
 				}
 			}
-		})
+		});
 		aEL(player.mainbody, "keydown",
 		function(e) {
-			switch(e.keyCode){
-				case 84:{
-					e.preventDefault();
-					if(e.altKey&&e.ctrlKey){
-						player.inputs.gettime.value=getVideoMillionSec();
+			switch (e.keyCode) {
+			case 84:
+				{
+
+					if (e.altKey && e.ctrlKey) {
+						e.preventDefault();
+						player.inputs.gettime.value = getVideoMillionSec();
 					}
 					break;
 				}
@@ -1618,7 +1795,7 @@ function initPlayer(_in_videoid) {
 		aEL(player.progress, "mousemove",
 		function(e) {
 			e.preventDefault();
-			var x = e.offsetX ||e.layerX;
+			var x = e.offsetX || e.layerX;
 			var time = x / player.progress.offsetWidth * player.video.duration;
 			if (progressmousekey) {
 				video.currentTime = time;
@@ -1943,10 +2120,11 @@ function initPlayer(_in_videoid) {
 	initSwitch();
 	initRange();
 	initInput();
-	initevents();setAllIntervals();
+	initevents();
+	setAllIntervals();
 	loadvideo();
 	loaddanmu();
-	
+
 }
 window.onload = function() {
 	UseDanmuPlayer();
@@ -1973,7 +2151,7 @@ window.onload = function() {
                                          ##           ##           ##
                                          #################
 */
-var 喵="不要卖萌눈_눈";
+var喵 = "不要卖萌눈_눈";
 /*字幕对象结构*/
 /*{id:id,ty:5,c:"{主要结构}}",t:null,s:null,d:"2014-05-17"}
 
