@@ -1193,7 +1193,7 @@ function initPlayer(_in_videoid) {
 		clearfun: {
 			div: function() {
 				for (var i = divdanmucontainer.length; i--;) {
-					divdanmucontainer[i].parentNode.removeChild(divdanmucontainer[i]);
+					player.danmuframe.removeChild(divdanmucontainer[i]);
 					divdanmucontainer.splice(i, 1);
 				}
 				danmutunnel = {
@@ -1249,9 +1249,9 @@ function initPlayer(_in_videoid) {
 								var tmp = node.type ? "left": "right";
 								var nodewidth = node.offsetWidth,
 								roadLength = width + nodewidth,
-								hasgone=roadLength * ((nowtime - node.time) / moveTime / width * 520) - nodewidth;
+								hasgone=(roadLength * ((nowtime - node.time) / moveTime / width * 520) - nodewidth).toFixed();
 								node.style[tmp] = hasgone + "px";
-								if (node.tunnelobj && node.style[tmp] > 150) {
+								if (node.tunnelobj &&hasgone> 150) {
 									danmutunnel[tmp][node.tunnelobj[1]][node.tunnelobj[2]] = null;
 									node.tunnelobj = null;
 								} else if (hasgone> width) {
@@ -1617,6 +1617,7 @@ function initPlayer(_in_videoid) {
 			off: function() {
 				player.o.divcommondanmu = false;
 				danmucontainer.display = true;
+				danmufuns.clear();
 				player.switchs["RealtimeVary"].enable();
 				danmufuns.mover = danmufuns.moverfun.canvas;
 				danmufuns.createCommonDanmu = danmufuns.createCommonDanmufun.canvas;

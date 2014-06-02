@@ -823,6 +823,7 @@ function newCOL() {
 				if (graph.parentNode) {
 					graph.parentNode.removeChild(graph);
 				}
+				delete graph;
 				return true;
 			}
 			return false;
